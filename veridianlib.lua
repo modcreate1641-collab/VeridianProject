@@ -1,4 +1,4 @@
-      local Veridianhub = {}
+local Veridianhub = {}
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
