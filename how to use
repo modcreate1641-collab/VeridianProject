@@ -1,0 +1,41 @@
+
+### 📋 Veridian OS Notification API Guide
+ * 📂 **Setup & Initialization**
+   * 📜 **Loadstring Execution**
+     * 💡 *Copy and run this code to import the library:*
+     ```lua
+     local NeonNotify = loadstring(game:HttpGet("https://raw.githubusercontent.com/modcreate1641-collab/VeridianProject/refs/heads/main/Notification-OS-library.lua"))()
+     
+     ```
+ * 📂 **API Methods**
+   * 🛠️ **NeonNotify:Notify(config)** — *Sends a queued neon notification to the screen.*
+     * ⚙️ Style (String) — *OS Theme selection:* "Samsung", "Apple", "Vivo", "Xiaomi", "Windows", "macOS" *(Default: "Apple")*
+     * ⚙️ Title (String) — *Header text of the notification.* *(Default: "System")*
+     * ⚙️ Content (String) — *Main description/message body.*
+     * ⚙️ Duration (Number) — *Display time in seconds before dismiss.* *(Default: 3.5)*
+   * 🛠️ **NeonNotify:SetStyle(styleName)** — *Changes the global default theme for future notifications.*
+     * ⚙️ styleName (String) — *Accepts any of the 6 OS choices listed above.*
+ * 📂 **Usage Examples**
+   * 🚀 **Full Configuration Syntax**
+     ```lua
+     NeonNotify:Notify({
+         Style = "Samsung",
+         Title = "Exploit Loaded",
+         Content = "Script is fully active and running in queue.",
+         Duration = 5
+     })
+     
+     ```
+   * ⚠️ **Minimalist Syntax (Fallback Safeguard)**
+     ```lua
+     -- Missing Title/Style will auto-fallback to "System" and default theme without errors
+     NeonNotify:Notify({
+         Content = "Quick system status update."
+     })
+     
+     ```
+   * 🌐 **Changing Global OS Theme**
+     ```lua
+     NeonNotify:SetStyle("Windows")
+     
+     ```
