@@ -4,90 +4,89 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
-
 local WindowAPI = {}
 
-local NotificationStyle = "OriginOS"
-local OpenHistoryKeybind = Enum.KeyCode.Insert
-
-local RandomEnjoyTexts = {
-	"Enjoy UI library?",
-	"System running smoothly.",
-	"Everything is up to date."
-}
+-- [[ 1. CONFIG & NEON OS THEMES ]]
+local CurrentStyle = "Apple" -- ค่าเริ่มต้น (เปลี่ยนเป็น Samsung, Vivo, Xiaomi, Windows, macOS ได้)
+local MAX_VISIBLE_NOTIFICATIONS = 3 -- แสดงผลบนจอพร้อมกันได้สูงสุดกี่ตัว (ที่เหลือต่อคิวรอ)
 
 local OS_Themes = {
-	OriginOS = {
-		Corner = 18,
-		Bg = Color3.fromRGB(250, 250, 250),
-		Text = Color3.fromRGB(28, 28, 30),
-		SubText = Color3.fromRGB(104, 104, 110),
-		Stroke = Color3.fromRGB(220, 220, 225),
-		StrokeTrans = 0.72,
-		BgTrans = 0,
-		Overlay = 0.38
-	},
-	Modern = {
-		Corner = 14,
-		Bg = Color3.fromRGB(24, 24, 28),
+	Samsung = {
+		Corner = 16,
+		Bg = Color3.fromRGB(20, 24, 30),
 		Text = Color3.fromRGB(255, 255, 255),
-		SubText = Color3.fromRGB(180, 180, 180),
-		Stroke = Color3.fromRGB(255, 255, 255),
-		StrokeTrans = 0.84,
-		BgTrans = 0.05,
-		Overlay = 0.45
+		SubText = Color3.fromRGB(150, 160, 175),
+		NeonColor = Color3.fromRGB(50, 130, 255), -- นีออนฟ้าน้ำทะเล
+		BgTrans = 0.25,
+		StrokeTrans = 0.4
+	},
+	Apple = {
+		Corner = 22,
+		Bg = Color3.fromRGB(25, 25, 25),
+		Text = Color3.fromRGB(255, 255, 255),
+		SubText = Color3.fromRGB(170, 170, 170),
+		NeonColor = Color3.fromRGB(255, 255, 255), -- นีออนขาวคลีนหรูหรา
+		BgTrans = 0.3,
+		StrokeTrans = 0.6
+	},
+	Vivo = {
+		Corner = 12,
+		Bg = Color3.fromRGB(15, 15, 20),
+		Text = Color3.fromRGB(255, 255, 255),
+		SubText = Color3.fromRGB(160, 165, 170),
+		NeonColor = Color3.fromRGB(0, 220, 255), -- นีออน OriginOS ไซเบอร์
+		BgTrans = 0.2,
+		StrokeTrans = 0.3
+	},
+	Xiaomi = {
+		Corner = 14,
+		Bg = Color3.fromRGB(30, 30, 35),
+		Text = Color3.fromRGB(255, 255, 255),
+		SubText = Color3.fromRGB(180, 180, 185),
+		NeonColor = Color3.fromRGB(255, 80, 0), -- นีออนส้ม HyperOS ดุดัน
+		BgTrans = 0.25,
+		StrokeTrans = 0.4
+	},
+	Windows = {
+		Corner = 8, -- มินิมอลเหลี่ยมๆ สไตล์ Win11-13
+		Bg = Color3.fromRGB(20, 25, 35),
+		Text = Color3.fromRGB(255, 255, 255),
+		SubText = Color3.fromRGB(140, 150, 165),
+		NeonColor = Color3.fromRGB(0, 255, 200), -- นีออนฟลูออเรสเซนต์เซาะร่อง
+		BgTrans = 0.15,
+		StrokeTrans = 0.3
+	},
+	macOS = {
+		Corner = 12,
+		Bg = Color3.fromRGB(28, 28, 30),
+		Text = Color3.fromRGB(255, 255, 255),
+		SubText = Color3.fromRGB(155, 155, 160),
+		NeonColor = Color3.fromRGB(255, 0, 130), -- นีออนชมพูตัวแม่เด่นๆ
+		BgTrans = 0.3,
+		StrokeTrans = 0.5
 	}
 }
 
+-- [[ 2. UTILITY FUNCTIONS ]]
 local function CreateTween(instance, properties, duration, style, direction)
-	local tweenInfo = TweenInfo.new(
-		duration or 0.35,
-		style or Enum.EasingStyle.Quart,
-		direction or Enum.EasingDirection.Out
-	)
+	local tweenInfo = TweenInfo.new(duration or 0.35, style or Enum.EasingStyle.Quart, direction or Enum.EasingDirection.Out)
 	local tween = TweenService:Create(instance, tweenInfo, properties)
 	tween:Play()
 	return tween
 end
 
-local function MakeCorner(parent, px)
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, px or 12)
-	c.Parent = parent
-	return c
-end
-
-local function MakeStroke(parent, color, thickness, transparency)
-	local s = Instance.new("UIStroke")
-	s.Color = color or Color3.fromRGB(255, 255, 255)
-	s.Thickness = thickness or 1
-	s.Transparency = transparency or 0.8
-	s.Parent = parent
-	return s
-end
-
 local function ParentGui(gui)
-	local ok = pcall(function()
-		gui.Parent = CoreGui
-	end)
-	if not ok then
-		gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-	end
+	local ok = pcall(function() gui.Parent = CoreGui end)
+	if not ok then gui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 end
 
+-- [[ 3. SETUP CORE CONTAINER ]]
 local NotificationGui = Instance.new("ScreenGui")
-NotificationGui.Name = "OS_NotificationSystem"
+NotificationGui.Name = "OS_NeonNotificationSystem"
 NotificationGui.DisplayOrder = 999999
 NotificationGui.ResetOnSpawn = false
 NotificationGui.IgnoreGuiInset = true
 ParentGui(NotificationGui)
-
-local Root = Instance.new("Frame")
-Root.Name = "Root"
-Root.Size = UDim2.new(1, 0, 1, 0)
-Root.BackgroundTransparency = 1
-Root.BorderSizePixel = 0
-Root.Parent = NotificationGui
 
 local NotifyContainer = Instance.new("Frame")
 NotifyContainer.Name = "NotifyContainer"
@@ -95,467 +94,134 @@ NotifyContainer.Size = UDim2.new(1, 0, 1, 0)
 NotifyContainer.BackgroundTransparency = 1
 NotifyContainer.BorderSizePixel = 0
 NotifyContainer.ZIndex = 999999
-NotifyContainer.Parent = Root
+NotifyContainer.Parent = NotificationGui
 
--- Background overlay
-local ShadeBg = Instance.new("Frame")
-ShadeBg.Name = "ShadeBg"
-ShadeBg.Size = UDim2.new(1, 0, 1, 0)
-ShadeBg.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
-ShadeBg.BackgroundTransparency = 1
-ShadeBg.Visible = false
-ShadeBg.BorderSizePixel = 0
-ShadeBg.ZIndex = 99990
-ShadeBg.Parent = Root
+-- [[ 4. QUEUE & REPOSITION SYSTEM ]]
+local NotificationQueue = {}  -- คิวรอแสดงผล
+local ActiveNotifications = {} -- คิวที่กำลังแสดงผลบนหน้าจอ
 
--- History sheet
-local HistorySheet = Instance.new("CanvasGroup")
-HistorySheet.Name = "HistorySheet"
-HistorySheet.Size = UDim2.new(1, 0, 1, 0)
-HistorySheet.Position = UDim2.new(0, 0, 0, 0)
-HistorySheet.BackgroundTransparency = 1
-HistorySheet.GroupTransparency = 1
-HistorySheet.Visible = false
-HistorySheet.ZIndex = 99991
-HistorySheet.Parent = Root
+local function RepositionActiveNotifications()
+	local currentY = 20 -- เว้นจากขอบบนจอลงมาหน่อย
+	for i = 1, #ActiveNotifications do
+		local card = ActiveNotifications[i]
+		if card and card.Parent then
+			-- สไลด์จัดตำแหน่งเรียงลงมาเป็นตับๆ
+			CreateTween(card, { Position = UDim2.new(0.5, 0, 0, currentY) }, 0.3, Enum.EasingStyle.Quart)
+			local height = card.AbsoluteSize.Y > 0 and card.AbsoluteSize.Y or 75
+			currentY = currentY + height + 10 -- ระยะห่างระหว่างกล่อง
+		end
+	end
+end
 
-local HistoryCard = Instance.new("CanvasGroup")
-HistoryCard.Name = "HistoryCard"
-HistoryCard.AnchorPoint = Vector2.new(0.5, 0.5)
-local CLOSED_POS = UDim2.new(0.5, 0, -0.45, 0)
-local OPEN_POS = UDim2.new(0.5, 0, 0.5, 0)
-HistoryCard.Position = CLOSED_POS
-HistoryCard.Size = UDim2.new(1, -24, 1, -24)
-HistoryCard.BackgroundColor3 = OS_Themes.OriginOS.Bg
-HistoryCard.BackgroundTransparency = OS_Themes.OriginOS.BgTrans
-HistoryCard.GroupTransparency = 0
-HistoryCard.BorderSizePixel = 0
-HistoryCard.ZIndex = 99991
-HistoryCard.Parent = HistorySheet
-
-local CardSizeConstraint = Instance.new("UISizeConstraint")
-CardSizeConstraint.MaxSize = Vector2.new(640, 860)
-CardSizeConstraint.MinSize = Vector2.new(320, 420)
-CardSizeConstraint.Parent = HistoryCard
-
-MakeCorner(HistoryCard, OS_Themes.OriginOS.Corner)
-MakeStroke(HistoryCard, OS_Themes.OriginOS.Stroke, 1, OS_Themes.OriginOS.StrokeTrans)
-
-local CardPadding = Instance.new("UIPadding")
-CardPadding.PaddingTop = UDim.new(0, 14)
-CardPadding.PaddingBottom = UDim.new(0, 14)
-CardPadding.PaddingLeft = UDim.new(0, 14)
-CardPadding.PaddingRight = UDim.new(0, 14)
-CardPadding.Parent = HistoryCard
-
-local TopHeader = Instance.new("Frame")
-TopHeader.Name = "TopHeader"
-TopHeader.Size = UDim2.new(1, 0, 0, 78)
-TopHeader.BackgroundTransparency = 1
-TopHeader.BorderSizePixel = 0
-TopHeader.ZIndex = 99992
-TopHeader.Parent = HistoryCard
-
-local HeaderDate = Instance.new("TextLabel")
-HeaderDate.Size = UDim2.new(1, -120, 0, 26)
-HeaderDate.Position = UDim2.new(0, 0, 0, 4)
-HeaderDate.BackgroundTransparency = 1
-HeaderDate.Text = os.date("%a %d %b %Y")
-HeaderDate.TextColor3 = OS_Themes.OriginOS.Text
-HeaderDate.Font = Enum.Font.GothamBold
-HeaderDate.TextSize = 18
-HeaderDate.TextXAlignment = Enum.TextXAlignment.Left
-HeaderDate.ZIndex = 99993
-HeaderDate.Parent = TopHeader
-
-local HeaderSub = Instance.new("TextLabel")
-HeaderSub.Size = UDim2.new(1, -120, 0, 16)
-HeaderSub.Position = UDim2.new(0, 0, 0, 30)
-HeaderSub.BackgroundTransparency = 1
-HeaderSub.Text = "Notifications"
-HeaderSub.TextColor3 = OS_Themes.OriginOS.SubText
-HeaderSub.Font = Enum.Font.GothamMedium
-HeaderSub.TextSize = 12
-HeaderSub.TextXAlignment = Enum.TextXAlignment.Left
-HeaderSub.ZIndex = 99993
-HeaderSub.Parent = TopHeader
-
-local ConsoleButton = Instance.new("TextButton")
-ConsoleButton.Name = "ConsoleButton"
-ConsoleButton.Size = UDim2.new(0, 84, 0, 32)
-ConsoleButton.Position = UDim2.new(1, -188, 0, 8)
-ConsoleButton.BackgroundColor3 = Color3.fromRGB(232, 232, 236)
-ConsoleButton.TextColor3 = OS_Themes.OriginOS.Text
-ConsoleButton.Font = Enum.Font.GothamMedium
-ConsoleButton.TextSize = 12
-ConsoleButton.Text = "Console"
-ConsoleButton.AutoButtonColor = true
-ConsoleButton.ZIndex = 99993
-ConsoleButton.Parent = TopHeader
-MakeCorner(ConsoleButton, 10)
-
-local CloseButton = Instance.new("TextButton")
-CloseButton.Name = "CloseButton"
-CloseButton.Size = UDim2.new(0, 32, 0, 32)
-CloseButton.Position = UDim2.new(1, -40, 0, 8)
-CloseButton.BackgroundColor3 = Color3.fromRGB(232, 232, 236)
-CloseButton.TextColor3 = OS_Themes.OriginOS.Text
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.TextSize = 18
-CloseButton.Text = "×"
-CloseButton.AutoButtonColor = true
-CloseButton.ZIndex = 99993
-CloseButton.Parent = TopHeader
-MakeCorner(CloseButton, 10)
-
-local GestureBar = Instance.new("Frame")
-GestureBar.Name = "GestureBar"
-GestureBar.Size = UDim2.new(1, 0, 0, 44)
-GestureBar.Position = UDim2.new(0, 0, 0, 0)
-GestureBar.BackgroundTransparency = 1
-GestureBar.BorderSizePixel = 0
-GestureBar.ZIndex = 99994
-GestureBar.Parent = HistoryCard
-
-local GestureHint = Instance.new("Frame")
-GestureHint.Size = UDim2.new(0, 54, 0, 5)
-GestureHint.AnchorPoint = Vector2.new(0.5, 0)
-GestureHint.Position = UDim2.new(0.5, 0, 0, 10)
-GestureHint.BackgroundColor3 = Color3.fromRGB(180, 180, 185)
-GestureHint.BackgroundTransparency = 0.2
-GestureHint.BorderSizePixel = 0
-GestureHint.ZIndex = 99994
-GestureHint.Parent = GestureBar
-MakeCorner(GestureHint, 3)
-
-local HistoryScroll = Instance.new("ScrollingFrame")
-HistoryScroll.Name = "HistoryScroll"
-HistoryScroll.Size = UDim2.new(1, 0, 1, -132)
-HistoryScroll.Position = UDim2.new(0, 0, 0, 88)
-HistoryScroll.BackgroundTransparency = 1
-HistoryScroll.BorderSizePixel = 0
-HistoryScroll.ScrollBarThickness = 2
-HistoryScroll.ScrollBarImageColor3 = Color3.fromRGB(170, 170, 175)
-HistoryScroll.ZIndex = 99992
-HistoryScroll.Parent = HistoryCard
-
-local ScrollLayout = Instance.new("UIListLayout")
-ScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ScrollLayout.Padding = UDim.new(0, 8)
-ScrollLayout.Parent = HistoryScroll
-
-local ScrollPad = Instance.new("UIPadding")
-ScrollPad.PaddingTop = UDim.new(0, 2)
-ScrollPad.PaddingBottom = UDim.new(0, 20)
-ScrollPad.PaddingLeft = UDim.new(0, 2)
-ScrollPad.PaddingRight = UDim.new(0, 2)
-ScrollPad.Parent = HistoryScroll
-
-ScrollLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-	HistoryScroll.CanvasSize = UDim2.new(0, 0, 0, ScrollLayout.AbsoluteContentSize.Y + 24)
-end)
-
-local ClearAllBtn = Instance.new("TextButton")
-ClearAllBtn.Name = "ClearAllBtn"
-ClearAllBtn.Size = UDim2.new(1, 0, 0, 30)
-ClearAllBtn.Position = UDim2.new(0, 0, 1, -34)
-ClearAllBtn.BackgroundTransparency = 1
-ClearAllBtn.Text = "Clear all"
-ClearAllBtn.TextColor3 = Color3.fromRGB(40, 120, 255)
-ClearAllBtn.Font = Enum.Font.GothamMedium
-ClearAllBtn.TextSize = 14
-ClearAllBtn.TextXAlignment = Enum.TextXAlignment.Right
-ClearAllBtn.ZIndex = 99993
-ClearAllBtn.Parent = HistoryCard
-
-local SimText = Instance.new("TextLabel")
-SimText.Name = "SimText"
-SimText.Size = UDim2.new(1, 0, 0, 18)
-SimText.Position = UDim2.new(0, 0, 1, -14)
-SimText.BackgroundTransparency = 1
-SimText.Text = "SIM 1 Today: 0.0 B   Used this month: 0.0 B"
-SimText.TextColor3 = OS_Themes.OriginOS.SubText
-SimText.Font = Enum.Font.Gotham
-SimText.TextSize = 11
-SimText.TextXAlignment = Enum.TextXAlignment.Left
-SimText.ZIndex = 99993
-SimText.Parent = HistoryCard
-
-local NotificationActive = {}
-local HistoryCount = 0
-local isHistoryOpen = false
-local consoleCallback = nil
-
-local function RepositionNotifications()
-	local currentY = 14
-	for i = #NotificationActive, 1, -1 do
-		local notif = NotificationActive[i]
-		if notif and notif.Parent then
-			local h = notif.AbsoluteSize.Y
-			if h <= 0 then
-				h = 72
+local function ProcessQueue()
+	-- ถ้าตัวบนจอโผล่ไม่เกินโควตา และยังมีของเหลืออยู่ในคิวรอ
+	if #ActiveNotifications < MAX_VISIBLE_NOTIFICATIONS and #NotificationQueue > 0 then
+		local nextNotify = table.remove(NotificationQueue, 1)
+		table.insert(ActiveNotifications, nextNotify.Frame)
+		
+		nextNotify.Frame.Parent = NotifyContainer
+		RepositionActiveNotifications()
+		
+		-- อนิเมชั่นสไลด์ลงมาจากนอกจอแบบนุ่มนวล
+		CreateTween(nextNotify.Frame, { GroupTransparency = 0 }, 0.25)
+		
+		-- ตั้งเวลาตายให้มันตาม Duration ที่กำหนด
+		task.delay(nextNotify.Duration, function()
+			-- ขากลับ สไลด์แว่บขึ้นข้างบนพร้อมจางหาย
+			for i, v in ipairs(ActiveNotifications) do
+				if v == nextNotify.Frame then
+					table.remove(ActiveNotifications, i)
+					break
+				end
 			end
-			CreateTween(
-				notif,
-				{ Position = UDim2.new(0.5, 0, 0, currentY) },
-				0.35,
-				Enum.EasingStyle.Quart,
-				Enum.EasingDirection.Out
-			)
-			currentY = currentY + h + 10
-		end
+			
+			CreateTween(nextNotify.Frame, { Position = UDim2.new(0.5, 0, 0, -150), GroupTransparency = 1 }, 0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+			RepositionActiveNotifications()
+			
+			task.wait(0.3)
+			nextNotify.Frame:Destroy()
+			ProcessQueue() -- ดึงคิวต่อไปขึ้นมาทำงานทันทีสัส!
+		end)
 	end
 end
 
-local function AddToHistory(title, content, theme)
-	HistoryCount += 1
-
-	local item = Instance.new("Frame")
-	item.Name = "HistoryItem_" .. tostring(HistoryCount)
-	item.Size = UDim2.new(1, 0, 0, 0)
-	item.AutomaticSize = Enum.AutomaticSize.Y
-	item.BackgroundColor3 = theme.Bg
-	item.BackgroundTransparency = theme.BgTrans
-	item.BorderSizePixel = 0
-	item.ZIndex = 99992
-	item.Parent = HistoryScroll
-
-	MakeCorner(item, theme.Corner)
-	MakeStroke(item, theme.Stroke, 1, theme.StrokeTrans)
-
-	local pad = Instance.new("UIPadding")
-	pad.PaddingTop = UDim.new(0, 10)
-	pad.PaddingBottom = UDim.new(0, 12)
-	pad.PaddingLeft = UDim.new(0, 14)
-	pad.PaddingRight = UDim.new(0, 14)
-	pad.Parent = item
-
-	local appIcon = Instance.new("Frame")
-	appIcon.Size = UDim2.new(0, 16, 0, 16)
-	appIcon.Position = UDim2.new(0, 0, 0, 2)
-	appIcon.BackgroundColor3 = Color3.fromRGB(0, 200, 150)
-	appIcon.BorderSizePixel = 0
-	appIcon.ZIndex = 99993
-	appIcon.Parent = item
-	MakeCorner(appIcon, 4)
-
-	local appInfo = Instance.new("TextLabel")
-	appInfo.Size = UDim2.new(1, -48, 0, 18)
-	appInfo.Position = UDim2.new(0, 24, 0, 0)
-	appInfo.BackgroundTransparency = 1
-	appInfo.Text = "Veridian Hub • now"
-	appInfo.TextColor3 = theme.SubText
-	appInfo.Font = Enum.Font.Gotham
-	appInfo.TextSize = 11
-	appInfo.TextXAlignment = Enum.TextXAlignment.Left
-	appInfo.ZIndex = 99993
-	appInfo.Parent = item
-
-	local timeLabel = Instance.new("TextLabel")
-	timeLabel.Size = UDim2.new(0, 80, 0, 18)
-	timeLabel.Position = UDim2.new(1, -80, 0, 0)
-	timeLabel.BackgroundTransparency = 1
-	timeLabel.Text = os.date("%H:%M")
-	timeLabel.TextColor3 = theme.SubText
-	timeLabel.Font = Enum.Font.Gotham
-	timeLabel.TextSize = 11
-	timeLabel.TextXAlignment = Enum.TextXAlignment.Right
-	timeLabel.ZIndex = 99993
-	timeLabel.Parent = item
-
-	local hTitle = Instance.new("TextLabel")
-	hTitle.Size = UDim2.new(1, 0, 0, 20)
-	hTitle.Position = UDim2.new(0, 0, 0, 22)
-	hTitle.BackgroundTransparency = 1
-	hTitle.Text = title
-	hTitle.TextColor3 = theme.Text
-	hTitle.Font = Enum.Font.GothamMedium
-	hTitle.TextSize = 14
-	hTitle.TextXAlignment = Enum.TextXAlignment.Left
-	hTitle.ZIndex = 99993
-	hTitle.Parent = item
-
-	local hDesc = Instance.new("TextLabel")
-	hDesc.Size = UDim2.new(1, 0, 0, 0)
-	hDesc.Position = UDim2.new(0, 0, 0, 44)
-	hDesc.BackgroundTransparency = 1
-	hDesc.Text = content
-	hDesc.TextColor3 = theme.SubText
-	hDesc.Font = Enum.Font.Gotham
-	hDesc.TextSize = 13
-	hDesc.TextWrapped = true
-	hDesc.TextXAlignment = Enum.TextXAlignment.Left
-	hDesc.AutomaticSize = Enum.AutomaticSize.Y
-	hDesc.ZIndex = 99993
-	hDesc.Parent = item
-
-	task.defer(function()
-		ScrollLayout:SortOrder()
-		HistoryScroll.CanvasPosition = Vector2.new(0, math.max(0, HistoryScroll.CanvasSize.Y.Offset))
-	end)
-end
-
-local function OpenHistory()
-	if isHistoryOpen then
-		return
-	end
-	isHistoryOpen = true
-
-	HistorySheet.Visible = true
-	ShadeBg.Visible = true
-
-	CreateTween(ShadeBg, { BackgroundTransparency = 1 - OS_Themes[NotificationStyle].Overlay }, 0.25)
-	CreateTween(HistorySheet, { GroupTransparency = 0 }, 0.25)
-	CreateTween(HistoryCard, {
-		Position = UDim2.new(0.5, 0, 0.5, 0)
-	}, 0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-end
-
-local function CloseHistory()
-	if not isHistoryOpen then
-		return
-	end
-	isHistoryOpen = false
-
-	CreateTween(ShadeBg, { BackgroundTransparency = 1 }, 0.22)
-	CreateTween(HistorySheet, { GroupTransparency = 1 }, 0.22)
-	CreateTween(HistoryCard, {
-		Position = UDim2.new(0.5, 0, -0.45, 0)
-	}, 0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-
-	task.delay(0.23, function()
-		if not isHistoryOpen then
-			ShadeBg.Visible = false
-			HistorySheet.Visible = false
-		end
-	end)
-end
-
-local function ToggleHistory()
-	if isHistoryOpen then
-		CloseHistory()
-	else
-		OpenHistory()
-	end
-end
-
-local function DismissNotify(frame)
-	if not frame or not frame.Parent then
-		return
-	end
-
-	for i, v in ipairs(NotificationActive) do
-		if v == frame then
-			table.remove(NotificationActive, i)
-			break
-		end
-	end
-
-	CreateTween(
-		frame,
-		{ Position = UDim2.new(0.5, 0, 0, -150), GroupTransparency = 1 },
-		0.25,
-		Enum.EasingStyle.Quart,
-		Enum.EasingDirection.In
-	)
-
-	RepositionNotifications()
-
-	task.delay(0.26, function()
-		if frame and frame.Parent then
-			frame:Destroy()
-		end
-	end)
-end
-
+-- [[ 5. NOTIFY CORE API ]]
 function WindowAPI:Notify(cfg)
-	local theme = OS_Themes[cfg.Style or NotificationStyle] or OS_Themes.OriginOS
-	local title = cfg.Title or "System"
-	local content = cfg.Content or "Notification"
-	local duration = cfg.Duration or 3
+	local theme = OS_Themes[cfg.Style or CurrentStyle] or OS_Themes.Apple
+	local title = cfg.Title or "System" -- ตามที่ตกลงกันไว้ หลุดมาเป็น nil ยัด System ทันทีกันเอ๋อ!
+	local content = cfg.Content or "Notification Active"
+	local duration = cfg.Duration or 3.5
 
-	if cfg.UseRandomText then
-		content = content .. " - " .. RandomEnjoyTexts[math.random(1, #RandomEnjoyTexts)]
-	end
-
-	AddToHistory(title, content, theme)
-
+	-- สร้างการ์ดข้อความ (CanvasGroup ตัวจบเรื่องจางใส)
 	local frame = Instance.new("CanvasGroup")
-	frame.Name = "NotifyCard"
-	frame.Size = UDim2.new(0, 340, 0, 0)
+	frame.Name = "NeonCard_" .. theme.NeonColor.R
+	frame.Size = UDim2.new(0, 320, 0, 0)
 	frame.AutomaticSize = Enum.AutomaticSize.Y
 	frame.AnchorPoint = Vector2.new(0.5, 0)
-	frame.Position = UDim2.new(0.5, 0, 0, -150)
+	frame.Position = UDim2.new(0.5, 0, 0, -150) -- สตาร์ทนอกจอข้างบนสุด
 	frame.BackgroundColor3 = theme.Bg
 	frame.BackgroundTransparency = theme.BgTrans
 	frame.BorderSizePixel = 0
-	frame.GroupTransparency = 0
+	frame.GroupTransparency = 1 -- ซ่อนไว้ก่อน เดี๋ยวค่อยจางเข้าตอนหลุดคิว
 	frame.ZIndex = 999999
-	frame.Parent = NotifyContainer
 
-	MakeCorner(frame, theme.Corner)
-	MakeStroke(frame, theme.Stroke, 1, theme.StrokeTrans)
+	local corner = Instance.new("UICorner", frame)
+	corner.CornerRadius = UDim.new(0, theme.Corner)
 
-	local pad = Instance.new("UIPadding")
-	pad.PaddingTop = UDim.new(0, 10)
+	-- กรอบนีออนเรืองแสงสะท้อนตาโจร
+	local stroke = Instance.new("UIStroke", frame)
+	stroke.Color = theme.NeonColor
+	stroke.Thickness = 1.2
+	stroke.Transparency = theme.StrokeTrans
+
+	local pad = Instance.new("UIPadding", frame)
+	pad.PaddingTop = UDim.new(0, 12)
 	pad.PaddingBottom = UDim.new(0, 12)
-	pad.PaddingLeft = UDim.new(0, 14)
-	pad.PaddingRight = UDim.new(0, 14)
-	pad.Parent = frame
+	pad.PaddingLeft = UDim.new(0, 16)
+	pad.PaddingRight = UDim.new(0, 16)
 
-	local appIcon = Instance.new("Frame")
-	appIcon.Size = UDim2.new(0, 16, 0, 16)
-	appIcon.Position = UDim2.new(0, 0, 0, 2)
-	appIcon.BackgroundColor3 = Color3.fromRGB(0, 200, 150)
-	appIcon.BorderSizePixel = 0
-	appIcon.ZIndex = 999999
-	appIcon.Parent = frame
-	MakeCorner(appIcon, 4)
+	-- ไอคอนจุดนีออนเล็กๆ เท่ๆ สไตล์สมาร์ทโฟน
+	local neonDot = Instance.new("Frame", frame)
+	neonDot.Size = UDim2.new(0, 8, 0, 8)
+	neonDot.Position = UDim2.new(0, 0, 0, 5)
+	neonDot.BackgroundColor3 = theme.NeonColor
+	neonDot.BorderSizePixel = 0
+	neonDot.ZIndex = 999999
+	Instance.new("UICorner", neonDot).CornerRadius = UDim.new(1, 0)
 
-	local appName = Instance.new("TextLabel")
-	appName.Size = UDim2.new(1, -48, 0, 18)
-	appName.Position = UDim2.new(0, 24, 0, 0)
-	appName.BackgroundTransparency = 1
-	appName.Text = "Veridian Hub • now"
-	appName.TextColor3 = theme.SubText
-	appName.Font = Enum.Font.Gotham
-	appName.TextSize = 11
-	appName.TextXAlignment = Enum.TextXAlignment.Left
-	appName.ZIndex = 999999
-	appName.Parent = frame
-
-	local tTitle = Instance.new("TextLabel")
-	tTitle.Size = UDim2.new(1, 0, 0, 20)
-	tTitle.Position = UDim2.new(0, 0, 0, 22)
+	-- [[ หัวข้อนีออน (Title) ]]
+	local tTitle = Instance.new("TextLabel", frame)
+	tTitle.Size = UDim2.new(1, -20, 0, 18)
+	tTitle.Position = UDim2.new(0, 16, 0, 0)
 	tTitle.BackgroundTransparency = 1
-	tTitle.Text = title
+	tTitle.Text = title:upper() -- ทำเป็นตัวพิมพ์ใหญ่ให้ดูขึงขังเหมือนแจ้งเตือนระบบ
 	tTitle.TextColor3 = theme.Text
-	tTitle.Font = Enum.Font.GothamMedium
-	tTitle.TextSize = 14
+	tTitle.Font = Enum.Font.GothamBold
+	tTitle.TextSize = 12
 	tTitle.TextXAlignment = Enum.TextXAlignment.Left
 	tTitle.ZIndex = 999999
-	tTitle.Parent = frame
 
-	local tDesc = Instance.new("TextLabel")
+	-- ตัวหนังสือนีออนเรืองแสงใต้ข้อความ (ใช้วิธีซ้อน Stroke คมๆ)
+	local titleNeon = Instance.new("UIStroke", tTitle)
+	titleNeon.Color = theme.NeonColor
+	titleNeon.Thickness = 0.5
+	titleNeon.Transparency = 0.4
+
+	-- [[ เนื้อหา (Content) ]]
+	local tDesc = Instance.new("TextLabel", frame)
 	tDesc.Size = UDim2.new(1, 0, 0, 0)
-	tDesc.Position = UDim2.new(0, 0, 0, 44)
+	tDesc.Position = UDim2.new(0, 0, 0, 24)
 	tDesc.BackgroundTransparency = 1
 	tDesc.Text = content
 	tDesc.TextColor3 = theme.SubText
-	tDesc.Font = Enum.Font.Gotham
+	tDesc.Font = Enum.Font.GothamMedium
 	tDesc.TextSize = 13
 	tDesc.TextWrapped = true
 	tDesc.TextXAlignment = Enum.TextXAlignment.Left
 	tDesc.AutomaticSize = Enum.AutomaticSize.Y
 	tDesc.ZIndex = 999999
-	tDesc.Parent = frame
 
-	table.insert(NotificationActive, 1, frame)
-
-	task.defer(function()
-		RepositionNotifications()
-	end)
-
+	-- ปัดนิ้วสไลด์ขึ้นเพื่อลบแจ้งเตือนเองกะทันหัน (ขี้เกียจรอหมดเวลา)
 	local startY = nil
 	frame.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -565,214 +231,31 @@ function WindowAPI:Notify(cfg)
 
 	frame.InputEnded:Connect(function(input)
 		if startY and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-			if startY - input.Position.Y > 20 then
-				DismissNotify(frame)
+			if startY - input.Position.Y > 15 then -- รูดนิ้วขึ้นข้างบนเกิน 15 พิกเซล
+				for i, v in ipairs(ActiveNotifications) do
+					if v == frame then
+						table.remove(ActiveNotifications, i)
+						break
+					end
+				end
+				CreateTween(frame, { Position = UDim2.new(0.5, 0, 0, -150), GroupTransparency = 1 }, 0.2, Enum.EasingStyle.QuartIn)
+				RepositionActiveNotifications()
+				task.delay(0.2, function() frame:Destroy() ProcessQueue() end)
 			end
 			startY = nil
 		end
 	end)
 
-	task.delay(duration, function()
-		DismissNotify(frame)
-	end)
+	-- ยัดเข้าคิวรอดำเนินการ
+	table.insert(NotificationQueue, { Frame = frame, Duration = duration })
+	ProcessQueue()
 end
 
-function WindowAPI:ClearHistory()
-	for _, child in ipairs(HistoryScroll:GetChildren()) do
-		if child:IsA("Frame") or child:IsA("CanvasGroup") then
-			child:Destroy()
-		end
-	end
-end
-
-function WindowAPI:SetConsoleCallback(fn)
-	consoleCallback = fn
-end
-
-CloseButton.MouseButton1Click:Connect(function()
-	CloseHistory()
-end)
-
-ConsoleButton.MouseButton1Click:Connect(function()
-	if typeof(consoleCallback) == "function" then
-		consoleCallback()
-	end
-end)
-
-ClearAllBtn.MouseButton1Click:Connect(function()
-	WindowAPI:ClearHistory()
-end)
-
-ShadeBg.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		CloseHistory()
-	end
-end)
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then
-		return
-	end
-
-	if input.KeyCode == OpenHistoryKeybind then
-		ToggleHistory()
-	end
-end)
-
-local dragging = false
-local dragStartY = 0
-local dragStartPosY = 0
-local dragMode = nil
-local DRAG_THRESHOLD = 90
-local DRAG_SNAP = 0.35
-
-local function SnapOpen()
-	isHistoryOpen = true
-	HistorySheet.Visible = true
-	ShadeBg.Visible = true
-
-	CreateTween(ShadeBg, { BackgroundTransparency = 1 - OS_Themes[NotificationStyle].Overlay }, 0.22)
-	CreateTween(HistorySheet, { GroupTransparency = 0 }, 0.22)
-	CreateTween(HistoryCard, { Position = OPEN_POS }, DRAG_SNAP, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-end
-
-local function SnapClose()
-	isHistoryOpen = false
-
-	CreateTween(ShadeBg, { BackgroundTransparency = 1 }, 0.2)
-	CreateTween(HistorySheet, { GroupTransparency = 1 }, 0.2)
-	CreateTween(HistoryCard, { Position = CLOSED_POS }, DRAG_SNAP, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
-
-	task.delay(0.22, function()
-		if not isHistoryOpen then
-			ShadeBg.Visible = false
-			HistorySheet.Visible = false
-		end
-	end)
-end
-
-local function OpenHistory()
-	if isHistoryOpen then return end
-	SnapOpen()
-end
-
-local function CloseHistory()
-	if not isHistoryOpen then return end
-	SnapClose()
-end
-
-local function ToggleHistory()
-	if isHistoryOpen then
-		CloseHistory()
-	else
-		OpenHistory()
-	end
-end
-
-local function Clamp(n, minv, maxv)
-	return math.max(minv, math.min(maxv, n))
-end
-
-GestureBar.InputBegan:Connect(function(input)
-	if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
-		return
-	end
-
-	dragging = true
-	dragStartY = input.Position.Y
-	dragStartPosY = HistoryCard.Position.Y.Scale
-	dragMode = isHistoryOpen and "close" or "open"
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-	if not dragging then
-		return
-	end
-
-	if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then
-		return
-	end
-
-	local deltaY = input.Position.Y - dragStartY
-	local screenH = workspace.CurrentCamera.ViewportSize.Y
-
-	if dragMode == "open" then
-		-- ลากลงจากข้างบน: ขยับจากนอกจอเข้ากลางจอ
-		local progress = Clamp(deltaY / DRAG_THRESHOLD, 0, 1)
-		local yScale = (-0.45) + ((0.5 + 0.45) * progress)
-		HistoryCard.Position = UDim2.new(0.5, 0, yScale, 0)
-
-		if progress >= 1 then
-			dragging = false
-			SnapOpen()
-		end
-
-	elseif dragMode == "close" then
-		-- ลากขึ้นตอนเปิดอยู่: ดันกลับขึ้นไปปิด
-		local progress = Clamp((-deltaY) / DRAG_THRESHOLD, 0, 1)
-		local yScale = 0.5 + ((-0.45 - 0.5) * progress)
-		HistoryCard.Position = UDim2.new(0.5, 0, yScale, 0)
-
-		if progress >= 1 then
-			dragging = false
-			SnapClose()
-		end
-	end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-	if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
-		return
-	end
-
-	if not dragging then
-		return
-	end
-
-	dragging = false
-
-	if dragMode == "open" then
-		if (HistoryCard.Position.Y.Scale >= 0.12) then
-			SnapOpen()
-		else
-			SnapClose()
-		end
-	elseif dragMode == "close" then
-		if (HistoryCard.Position.Y.Scale <= 0.05) then
-			SnapClose()
-		else
-			SnapOpen()
-		end
-	end
-end)
-
+-- [[ 6. CONTROLLER API ]]
 function WindowAPI:SetStyle(styleName)
 	if OS_Themes[styleName] then
-		NotificationStyle = styleName
-		local theme = OS_Themes[styleName]
-
-		HistoryCard.BackgroundColor3 = theme.Bg
-		HistoryCard.BackgroundTransparency = theme.BgTrans
-
-		local stroke = HistoryCard:FindFirstChildOfClass("UIStroke")
-		if stroke then
-			stroke.Color = theme.Stroke
-			stroke.Transparency = theme.StrokeTrans
-		end
-
-		HeaderDate.TextColor3 = theme.Text
-		HeaderSub.TextColor3 = theme.SubText
-		ClearAllBtn.TextColor3 = Color3.fromRGB(40, 120, 255)
-		SimText.TextColor3 = theme.SubText
+		CurrentStyle = styleName
 	end
-end
-
-function WindowAPI:OpenHistory()
-	OpenHistory()
-end
-
-function WindowAPI:CloseHistory()
-	CloseHistory()
 end
 
 return WindowAPI
