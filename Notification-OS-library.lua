@@ -52,61 +52,37 @@ ShadeBg.BackgroundTransparency = 1
 ShadeBg.Visible = false
 ShadeBg.ZIndex = 99990
 
+-- 🟢 [แก้ไข] ปรับ Size ให้เป็น Scale ผสม Offset จะได้ไม่ล้นจอมือถือ และใช้ AnchorPoint ช่วยจัดกลาง
 local HistoryPanel = Instance.new("CanvasGroup", NotificationGui)
-HistoryPanel.Size = UDim2.new(0, 360, 0, 550)
-HistoryPanel.Position = UDim2.new(0.5, -180, 0, -600)
-HistoryPanel.BackgroundColor3 = Color3.fromRGB(240, 240, 243) -- สีเทาพื้นหลังมือถือ
+HistoryPanel.Size = UDim2.new(0.9, 0, 0.85, 0) -- กว้าง 90% ของจอ, สูง 85% ของจอ
+HistoryPanel.AnchorPoint = Vector2.new(0.5, 0) -- จุดหมุนอยู่ตรงกลางขอบบน
+HistoryPanel.Position = UDim2.new(0.5, 0, -1, 0) -- ซ่อนไว้ด้านบนสุดนอกจอ (แทนการใช้ -600 ที่อาจจะไม่พ้นจอแท็บเล็ต)
+HistoryPanel.BackgroundColor3 = Color3.fromRGB(240, 240, 243) 
 HistoryPanel.GroupTransparency = 1
 HistoryPanel.ZIndex = 99991
-Instance.new("UICorner", HistoryPanel).CornerRadius = UDim.new(0, 0) -- เต็มจอด้านบน
+
+-- ใช้ UIAspectRatioConstraint เพื่อควบคุมสัดส่วนไม่ให้มันแบนเกินไปบนหน้าจอที่กว้างมากๆ (ทางเลือก)
+local AspectRatio = Instance.new("UIAspectRatioConstraint", HistoryPanel)
+AspectRatio.AspectRatio = 0.65 
+AspectRatio.AspectType = Enum.AspectType.FitWithinMaxSize
+AspectRatio.DominantAxis = Enum.DominantAxis.Height
+
 
 -- Header วันที่ (แบบ Real-time)
 local HeaderDate = Instance.new("TextLabel", HistoryPanel)
 HeaderDate.Size = UDim2.new(1, -40, 0, 30)
-HeaderDate.Position = UDim2.new(0, 20, 0, 30)
+HeaderDate.Position = UDim2.new(0, 20, 0, 15) -- ขยับขึ้นนิดนึง
 HeaderDate.BackgroundTransparency = 1
-HeaderDate.Text = os.date("%a %d %B %Y") -- เช่น Tue 9 June 2026
-HeaderDate.TextColor3 = Color3.fromRGB(255, 255, 255)
+HeaderDate.Text = os.date("%a %d %B %Y") 
+HeaderDate.TextColor3 = Color3.fromRGB(20, 20, 20) -- 🟢 [แก้ไข] เปลี่ยนเป็นสีเข้ม เพราะพื้นหลัง panel มันสีสว่าง (240,240,243)
 HeaderDate.Font = Enum.Font.GothamBold
 HeaderDate.TextSize = 18
 HeaderDate.TextXAlignment = Enum.TextXAlignment.Left
 
--- การ์ดสีขาวที่รวมแจ้งเตือนทั้งหมด
-local CardContainer = Instance.new("Frame", HistoryPanel)
-CardContainer.Size = UDim2.new(1, -20, 1, -120)
-CardContainer.Position = UDim2.new(0, 10, 0, 80)
-CardContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Instance.new("UICorner", CardContainer).CornerRadius = UDim.new(0, 16)
-
-local HistoryScroll = Instance.new("ScrollingFrame", CardContainer)
-HistoryScroll.Size = UDim2.new(1, 0, 1, -40) -- เว้นที่ให้ปุ่ม Clear all
-HistoryScroll.Position = UDim2.new(0, 0, 0, 0)
-HistoryScroll.BackgroundTransparency = 1
-HistoryScroll.ScrollBarThickness = 0
-HistoryScroll.BorderSizePixel = 0
-
-local ScrollLayout = Instance.new("UIListLayout", HistoryScroll)
-ScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-ScrollLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    HistoryScroll.CanvasSize = UDim2.new(0, 0, 0, ScrollLayout.AbsoluteContentSize.Y)
-end)
-
--- ปุ่ม Clear all
-local ClearAllBtn = Instance.new("TextButton", CardContainer)
-ClearAllBtn.Size = UDim2.new(1, -20, 0, 30)
-ClearAllBtn.Position = UDim2.new(0, 10, 1, -35)
-ClearAllBtn.BackgroundTransparency = 1
-ClearAllBtn.Text = "Clear all"
-ClearAllBtn.TextColor3 = Color3.fromRGB(40, 120, 255) -- สีฟ้าแบบมือถือ
-ClearAllBtn.Font = Enum.Font.GothamMedium
-ClearAllBtn.TextSize = 13
-ClearAllBtn.TextXAlignment = Enum.TextXAlignment.Right
-
--- ปุ่ม Console บน Header
+-- ปุ่ม Console บน Header (ย้ายมาก่อน CardContainer จะได้ไม่โดนทับ)
 local ConsoleBtn = Instance.new("TextButton", HistoryPanel)
 ConsoleBtn.Size = UDim2.new(0, 35, 0, 35)
-ConsoleBtn.Position = UDim2.new(1, -50, 0, 25)
+ConsoleBtn.Position = UDim2.new(1, -50, 0, 15)
 ConsoleBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 ConsoleBtn.BackgroundTransparency = 0.5
 ConsoleBtn.Text = "C"
@@ -119,6 +95,44 @@ ConsoleBtn.MouseButton1Click:Connect(function()
     game:GetService("StarterGui"):SetCore("DevConsoleVisible", true)
 end)
 
+-- การ์ดสีขาวที่รวมแจ้งเตือนทั้งหมด
+local CardContainer = Instance.new("Frame", HistoryPanel)
+CardContainer.Size = UDim2.new(1, -20, 1, -60) -- 🟢 [แก้ไข] ให้เต็มพื้นที่ลงมาจนเกือบสุด
+CardContainer.Position = UDim2.new(0, 10, 0, 60)
+CardContainer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CardContainer.ZIndex = 99992 -- ดันเลเยอร์ขึ้น
+Instance.new("UICorner", CardContainer).CornerRadius = UDim.new(0, 16)
+
+-- 🟢 [แก้ไข] คลิปเนื้อหาให้อยู่ในกรอบ และจัดพื้นที่เลื่อนให้สมส่วน
+local HistoryScroll = Instance.new("ScrollingFrame", CardContainer)
+HistoryScroll.Size = UDim2.new(1, 0, 1, -40) 
+HistoryScroll.Position = UDim2.new(0, 0, 0, 0)
+HistoryScroll.BackgroundTransparency = 1
+HistoryScroll.ScrollBarThickness = 2 -- ให้เห็นแถบเลื่อนบางๆ บนมือถือ
+HistoryScroll.BorderSizePixel = 0
+HistoryScroll.ClipsDescendants = true -- ป้องกันเนื้อหาทะลุกรอบมุมโค้ง
+HistoryScroll.ZIndex = 99993
+
+local ScrollLayout = Instance.new("UIListLayout", HistoryScroll)
+ScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ScrollLayout.Padding = UDim.new(0, 5) -- เพิ่มช่องไฟระหว่างแจ้งเตือน
+
+ScrollLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    HistoryScroll.CanvasSize = UDim2.new(0, 0, 0, ScrollLayout.AbsoluteContentSize.Y + 10) -- 🟢 [แก้ไข] บวกเผื่อที่ว่างด้านล่างนิดนึง
+end)
+
+-- ปุ่ม Clear all
+local ClearAllBtn = Instance.new("TextButton", CardContainer)
+ClearAllBtn.Size = UDim2.new(1, -20, 0, 30)
+ClearAllBtn.Position = UDim2.new(0, 10, 1, -35)
+ClearAllBtn.BackgroundTransparency = 1
+ClearAllBtn.Text = "Clear all"
+ClearAllBtn.TextColor3 = Color3.fromRGB(40, 120, 255) 
+ClearAllBtn.Font = Enum.Font.GothamMedium
+ClearAllBtn.TextSize = 13
+ClearAllBtn.TextXAlignment = Enum.TextXAlignment.Right
+ClearAllBtn.ZIndex = 99994
+
 -- ฟังก์ชันล้างประวัติ
 ClearAllBtn.MouseButton1Click:Connect(function()
     for _, child in pairs(HistoryScroll:GetChildren()) do
@@ -129,7 +143,7 @@ end)
 
 -- [[ 3. Pull-down Tab ]]
 local TopTabHitbox = Instance.new("TextButton", NotificationGui)
-TopTabHitbox.Size = UDim2.new(0, 100, 0, 20)
+TopTabHitbox.Size = UDim2.new(0, 100, 0, 30) -- เพิ่มความกว้างปุ่มให้กดง่ายขึ้นบนมือถือ
 TopTabHitbox.Position = UDim2.new(0.5, -50, 0, 0)
 TopTabHitbox.BackgroundTransparency = 1
 TopTabHitbox.Text = ""
@@ -147,13 +161,14 @@ local function ToggleHistory()
     isHistoryOpen = not isHistoryOpen
     if isHistoryOpen then
         ShadeBg.Visible = true
-        HeaderDate.Text = os.date("%a %d %B %Y") -- อัปเดตวันที่ตอนเปิด
+        HeaderDate.Text = os.date("%a %d %B %Y") 
         CreateTween(ShadeBg, {BackgroundTransparency = 0.6}, 0.4)
-        CreateTween(HistoryPanel, {Position = UDim2.new(0.5, -180, 0, 0), GroupTransparency = 0}, 0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+        -- 🟢 [แก้ไข] เปลี่ยนจาก Offset เป็น Scale (0.05 คือลงมาจากขอบจอบน 5%)
+        CreateTween(HistoryPanel, {Position = UDim2.new(0.5, 0, 0.05, 0), GroupTransparency = 0}, 0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
         CreateTween(TopTabVisual, {BackgroundTransparency = 1}, 0.2)
     else
         CreateTween(ShadeBg, {BackgroundTransparency = 1}, 0.4)
-        CreateTween(HistoryPanel, {Position = UDim2.new(0.5, -180, 0, -600), GroupTransparency = 1}, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+        CreateTween(HistoryPanel, {Position = UDim2.new(0.5, 0, -1, 0), GroupTransparency = 1}, 0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
         CreateTween(TopTabVisual, {BackgroundTransparency = 0.5}, 0.2)
         task.wait(0.4)
         if not isHistoryOpen then ShadeBg.Visible = false end
@@ -165,31 +180,35 @@ UserInputService.InputBegan:Connect(function(input, gp)
     if not gp and input.KeyCode == OpenHistoryKeybind then ToggleHistory() end
 end)
 
--- [[ 4. ฟังก์ชันเพิ่มประวัติ (ดีไซน์ตามภาพ) ]]
+-- [[ 4. ฟังก์ชันเพิ่มประวัติ ]]
 local function AddToHistory(title, content)
     local item = Instance.new("Frame", HistoryScroll)
-    item.Size = UDim2.new(1, 0, 0, 80)
+    -- 🟢 [แก้ไข] ให้ระบบ Auto Size ความสูงของไอเทมตามความยาวของข้อความแทน
+    item.Size = UDim2.new(1, 0, 0, 0) 
     item.BackgroundTransparency = 1
+    item.ZIndex = 99993
+    item.AutomaticSize = Enum.AutomaticSize.Y
     
     -- เส้นคั่น Divider
     local divider = Instance.new("Frame", item)
     divider.Size = UDim2.new(1, 0, 0, 1)
-    divider.Position = UDim2.new(0, 0, 1, -1)
+    divider.Position = UDim2.new(0, 0, 1, 0)
+    divider.AnchorPoint = Vector2.new(0, 1)
     divider.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
     divider.BorderSizePixel = 0
 
-    -- App Info (แถวบนสุด: ชื่อแอป • เวลา)
+    -- App Info
     local appInfo = Instance.new("TextLabel", item)
     appInfo.Size = UDim2.new(1, -40, 0, 20)
     appInfo.Position = UDim2.new(0, 40, 0, 10)
     appInfo.BackgroundTransparency = 1
     appInfo.Text = "Veridian Hub • now"
-    appInfo.TextColor3 = Color3.fromRGB(120, 120, 120) -- สีเทาหม่น
+    appInfo.TextColor3 = Color3.fromRGB(120, 120, 120) 
     appInfo.Font = Enum.Font.Gotham
     appInfo.TextSize = 11
     appInfo.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- ไอคอนแอปสมมติ
+    -- ไอคอนแอป
     local appIcon = Instance.new("Frame", item)
     appIcon.Size = UDim2.new(0, 16, 0, 16)
     appIcon.Position = UDim2.new(0, 15, 0, 12)
@@ -202,14 +221,14 @@ local function AddToHistory(title, content)
     hTitle.Position = UDim2.new(0, 15, 0, 35)
     hTitle.BackgroundTransparency = 1
     hTitle.Text = title
-    hTitle.TextColor3 = Color3.fromRGB(20, 20, 20) -- สีดำตัดพื้นขาวชัดเจน
+    hTitle.TextColor3 = Color3.fromRGB(20, 20, 20) 
     hTitle.Font = Enum.Font.GothamMedium
     hTitle.TextSize = 14
     hTitle.TextXAlignment = Enum.TextXAlignment.Left
 
     -- เนื้อหา (Content)
     local hDesc = Instance.new("TextLabel", item)
-    hDesc.Size = UDim2.new(1, -30, 0, 20)
+    hDesc.Size = UDim2.new(1, -30, 0, 0) -- 🟢 [แก้ไข] ความสูงเป็น 0 แล้วให้ AutomaticSize ทำงาน
     hDesc.Position = UDim2.new(0, 15, 0, 55)
     hDesc.BackgroundTransparency = 1
     hDesc.Text = content
@@ -217,7 +236,12 @@ local function AddToHistory(title, content)
     hDesc.Font = Enum.Font.Gotham
     hDesc.TextSize = 13
     hDesc.TextXAlignment = Enum.TextXAlignment.Left
-    hDesc.TextTruncate = Enum.TextTruncate.AtEnd
+    hDesc.TextWrapped = true -- 🟢 [แก้ไข] ยอมให้ข้อความขึ้นบรรทัดใหม่
+    hDesc.AutomaticSize = Enum.AutomaticSize.Y
+    
+    -- เผื่อที่ด้านล่างให้เส้น Divider หลังจากข้อความขยายตัว
+    local pad = Instance.new("UIPadding", item)
+    pad.PaddingBottom = UDim.new(0, 10)
 end
 
 -- [[ 5. ฟังก์ชันแจ้งเตือนหลัก (ป๊อปอัพ) ]]
@@ -233,15 +257,21 @@ function WindowAPI:Notify(cfg)
 
     AddToHistory(title, content)
 
+    -- 🟢 [แก้ไข] ย้าย Notification popup มาอยู่ด้านขวาล่าง แบบ Rayfield จะได้ไม่บังหน้าจอเวลาเล่นเกม
     local frame = Instance.new("CanvasGroup", NotifyContainer)
-    frame.Size = UDim2.new(0, 320, 0, 75)
-    local targetY = 20 + (NotificationCount * 85)
-    frame.Position = UDim2.new(0.5, -160, 0, -100) 
+    frame.Size = UDim2.new(0, 320, 0, 0)
+    frame.AutomaticSize = Enum.AutomaticSize.Y
+    local targetY = -20 - (NotificationCount * 90) -- เลื่อนขึ้นทีละ 90px
+    frame.Position = UDim2.new(1, 320, 1, targetY) -- ซ่อนไว้ขวานอกจอ
+    frame.AnchorPoint = Vector2.new(1, 1) -- จุดหมุนขวาล่าง
     frame.BackgroundColor3 = theme.Bg
     frame.BackgroundTransparency = theme.BgTrans
     frame.ZIndex = 999999
     frame.GroupTransparency = 0
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, theme.Corner)
+    
+    local padPopup = Instance.new("UIPadding", frame)
+    padPopup.PaddingBottom = UDim.new(0, 10)
 
     local stroke = Instance.new("UIStroke", frame)
     stroke.Color = Color3.fromRGB(150, 150, 150)
@@ -259,7 +289,7 @@ function WindowAPI:Notify(cfg)
     tTitle.TextXAlignment = Enum.TextXAlignment.Left
 
     local tDesc = Instance.new("TextLabel", frame)
-    tDesc.Size = UDim2.new(1, -20, 0, 35)
+    tDesc.Size = UDim2.new(1, -20, 0, 0)
     tDesc.Position = UDim2.new(0, 15, 0, 30)
     tDesc.BackgroundTransparency = 1
     tDesc.Text = content
@@ -269,8 +299,10 @@ function WindowAPI:Notify(cfg)
     tDesc.TextWrapped = true
     tDesc.TextXAlignment = Enum.TextXAlignment.Left
     tDesc.TextYAlignment = Enum.TextYAlignment.Top
+    tDesc.AutomaticSize = Enum.AutomaticSize.Y
 
-    CreateTween(frame, {Position = UDim2.new(0.5, -160, 0, targetY)}, 0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    -- สไลด์ป๊อปอัพเข้ามาจากด้านขวา
+    CreateTween(frame, {Position = UDim2.new(1, -20, 1, targetY)}, 0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
     NotificationCount = NotificationCount + 1
 
     local isDismissed = false
@@ -278,18 +310,19 @@ function WindowAPI:Notify(cfg)
         if isDismissed then return end
         isDismissed = true
         NotificationCount = math.max(0, NotificationCount - 1)
-        CreateTween(frame, {Position = UDim2.new(0.5, -160, 0, frame.Position.Y.Offset - 100), GroupTransparency = 1}, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
+        CreateTween(frame, {Position = UDim2.new(1, 320, 1, frame.Position.Y.Offset), GroupTransparency = 1}, 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In)
         task.wait(0.3)
         frame:Destroy()
     end
 
-    local startY = 0
+    -- ปัดขวาเพื่อลบทิ้ง (Swipe to dismiss แบบมือถือ)
+    local startX = 0
     frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then startY = input.Position.Y end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then startX = input.Position.X end
     end)
     frame.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            if startY - input.Position.Y > 15 then DismissNotify() end
+            if input.Position.X - startX > 20 then DismissNotify() end -- ปัดไปทางขวานิดเดียวก็ลบเลย
         end
     end)
 
