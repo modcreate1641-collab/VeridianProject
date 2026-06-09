@@ -676,11 +676,11 @@ BtnIcon.BackgroundTransparency = 1
 BtnIcon.Image = getcustomasset(CONFIG.BgFolder .. "/Icons/destroy icon.png")
 BtnIcon.ZIndex = 13
 
--- [[ POPUP UI SETUP ]]
+-- [[ POPUP UI SETUP (MODERN BLUE THEME) ]]
 local DestroyOverlay = Instance.new("Frame", MainFrame)
 DestroyOverlay.Name = "DestroyOverlay"
 DestroyOverlay.Size = UDim2.new(1, 0, 1, 0)
-DestroyOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 5)
+DestroyOverlay.BackgroundColor3 = Color3.fromRGB(0, 5, 15)
 DestroyOverlay.BackgroundTransparency = 1
 DestroyOverlay.Visible = false
 DestroyOverlay.ZIndex = 900
@@ -691,22 +691,22 @@ ConfirmBox.Name = "ConfirmBox"
 ConfirmBox.AnchorPoint = Vector2.new(0.5, 0.5)
 ConfirmBox.Size = UDim2.new(0, 0, 0, 0)
 ConfirmBox.Position = UDim2.new(0.5, 0, 0.5, 0)
-ConfirmBox.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+ConfirmBox.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
 ConfirmBox.ClipsDescendants = true
 ConfirmBox.ZIndex = 901
 Instance.new("UICorner", ConfirmBox).CornerRadius = UDim.new(0, 8)
-
 local ConfirmStroke = Instance.new("UIStroke", ConfirmBox)
-ConfirmStroke.Color = Color3.fromRGB(200, 50, 50)
+ConfirmStroke.Color = Color3.fromRGB(0, 120, 255)
 ConfirmStroke.Thickness = 1.5
 ConfirmStroke.Transparency = 1
+ConfirmStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 local WarningTitle = Instance.new("TextLabel", ConfirmBox)
 WarningTitle.Size = UDim2.new(1, 0, 0, 30)
 WarningTitle.Position = UDim2.new(0, 0, 0, 15)
 WarningTitle.BackgroundTransparency = 1
-WarningTitle.Text = "WARNING"
-WarningTitle.TextColor3 = Color3.fromRGB(255, 100, 100)
+WarningTitle.Text = "SYSTEM NOTICE"
+WarningTitle.TextColor3 = Color3.fromRGB(50, 150, 255)
 WarningTitle.Font = Enum.Font.GothamBlack
 WarningTitle.TextSize = 18
 WarningTitle.ZIndex = 902
@@ -716,7 +716,7 @@ WarningDesc.Size = UDim2.new(1, -20, 0, 40)
 WarningDesc.Position = UDim2.new(0, 10, 0, 45)
 WarningDesc.BackgroundTransparency = 1
 WarningDesc.Text = "Are you sure you want to close this hub?"
-WarningDesc.TextColor3 = Color3.fromRGB(200, 200, 200)
+WarningDesc.TextColor3 = Color3.fromRGB(200, 220, 255)
 WarningDesc.Font = Enum.Font.GothamSemibold
 WarningDesc.TextSize = 13
 WarningDesc.TextWrapped = true
@@ -725,7 +725,7 @@ WarningDesc.ZIndex = 902
 local ActionBtn = Instance.new("TextButton", ConfirmBox)
 ActionBtn.Size = UDim2.new(0, 110, 0, 32)
 ActionBtn.Position = UDim2.new(0.5, 10, 1, -45)
-ActionBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
+ActionBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 220)
 ActionBtn.Text = "YES (1/2)"
 ActionBtn.TextColor3 = Color3.new(1, 1, 1)
 ActionBtn.Font = Enum.Font.GothamBold
@@ -733,16 +733,25 @@ ActionBtn.TextSize = 13
 ActionBtn.ZIndex = 902
 Instance.new("UICorner", ActionBtn).CornerRadius = UDim.new(0, 6)
 
+local ActionStroke = Instance.new("UIStroke", ActionBtn)
+ActionStroke.Color = Color3.fromRGB(100, 180, 255) -- ขอบปุ่ม Yes
+ActionStroke.Thickness = 1.2
+ActionStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 local CancelBtn = Instance.new("TextButton", ConfirmBox)
 CancelBtn.Size = UDim2.new(0, 110, 0, 32)
 CancelBtn.Position = UDim2.new(0.5, -120, 1, -45)
-CancelBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
+CancelBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
 CancelBtn.Text = "CANCEL"
 CancelBtn.TextColor3 = Color3.new(1, 1, 1)
 CancelBtn.Font = Enum.Font.GothamBold
 CancelBtn.TextSize = 13
 CancelBtn.ZIndex = 902
 Instance.new("UICorner", CancelBtn).CornerRadius = UDim.new(0, 6)
+
+local CancelStroke = Instance.new("UIStroke", CancelBtn)
+CancelStroke.Color = Color3.fromRGB(80, 90, 110) -- ขอบปุ่ม Cancel
+CancelStroke.Thickness = 1.2
+CancelStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
 local destroyStage = 0
 local timeoutTask = nil
@@ -760,15 +769,16 @@ local function resetDestroySequence()
     
     task.delay(0.3, function()
         DestroyOverlay.Visible = false
-        WarningTitle.Text = "WARNING"
-        WarningTitle.TextColor3 = Color3.fromRGB(255, 100, 100)
+        WarningTitle.Text = "SYSTEM NOTICE"
+        WarningTitle.TextColor3 = Color3.fromRGB(50, 150, 255)
         WarningDesc.Text = "Are you sure you want to close this hub?"
         ActionBtn.Text = "YES (1/2)"
-        ActionBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
+        ActionBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 220)
+        ActionStroke.Color = Color3.fromRGB(100, 180, 255)
     end)
 end
 
-ClosedBtn.MouseEnter:Connect(function() CreateTween(ClosedBtn, {BackgroundColor3 = Color3.fromRGB(180, 50, 50)}, 0.2) end)
+ClosedBtn.MouseEnter:Connect(function() CreateTween(ClosedBtn, {BackgroundColor3 = Color3.fromRGB(0, 80, 200)}, 0.2) end)
 ClosedBtn.MouseLeave:Connect(function() CreateTween(ClosedBtn, {BackgroundColor3 = Color3.fromRGB(129, 129, 129)}, 0.2) end)
 
 ClosedBtn.Activated:Connect(function()
@@ -791,10 +801,11 @@ ActionBtn.Activated:Connect(function()
         if timeoutTask then task.cancel(timeoutTask) end
         
         WarningTitle.Text = "LAST WARNING!"
-        WarningTitle.TextColor3 = Color3.fromRGB(255, 50, 50)
+        WarningTitle.TextColor3 = Color3.fromRGB(0, 200, 255)
         WarningDesc.Text = "This action cannot be undone. DESTROY HUB?"
         ActionBtn.Text = "DESTROY"
-        ActionBtn.BackgroundColor3 = Color3.fromRGB(220, 30, 30)
+        ActionBtn.BackgroundColor3 = Color3.fromRGB(0, 50, 150)
+        ActionStroke.Color = Color3.fromRGB(0, 255, 255)
         
         CreateTween(ConfirmBox, {Rotation = 4}, 0.05, Enum.EasingStyle.Sine, Enum.EasingDirection.Out).Completed:Connect(function()
             CreateTween(ConfirmBox, {Rotation = -4}, 0.05, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut).Completed:Connect(function()
@@ -1085,7 +1096,7 @@ function WindowAPI:UpdateTheme(newColor)
     local DeepOverlay = MutedColor:lerp(BaseDark, 0.8)
     local HighlightColor = MutedColor:lerp(Color3.new(1, 1, 1), 0.3) 
     
-    local GlobalTransparency = 0.5 
+    local GlobalTransparency = 0 -- กูแก้เป็น 0 ให้ละ ทึบตึ๊บแน่นอนไอ้สอง!
 
     CONFIG.NavBtnColor = MutedColor
     CONFIG.HoverColor = MutedColor:lerp(Color3.new(1, 1, 1), 0.15)
