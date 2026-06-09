@@ -1223,7 +1223,7 @@ function WindowAPI:CreateTab(name, target, isAuto)
     end)
     b.MouseLeave:Connect(function() 
         CreateTween(b, {TextColor3 = Color3.new(0.9, 0.9, 0.9)}) 
-        CreateTween(bStroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5})
+        CreateTween(bStroke, {Color = Color3.fromRGB(0, 255, 255), Transparency = 0.5})
     end)
 
     local TabAPI = {}
