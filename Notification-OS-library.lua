@@ -122,7 +122,9 @@ HistorySheet.Parent = Root
 local HistoryCard = Instance.new("CanvasGroup")
 HistoryCard.Name = "HistoryCard"
 HistoryCard.AnchorPoint = Vector2.new(0.5, 0.5)
-HistoryCard.Position = UDim2.new(0.5, 0, -0.45, 0)
+local CLOSED_POS = UDim2.new(0.5, 0, -0.45, 0)
+local OPEN_POS = UDim2.new(0.5, 0, 0.5, 0)
+HistoryCard.Position = CLOSED_POS
 HistoryCard.Size = UDim2.new(1, -24, 1, -24)
 HistoryCard.BackgroundColor3 = OS_Themes.OriginOS.Bg
 HistoryCard.BackgroundTransparency = OS_Themes.OriginOS.BgTrans
@@ -619,42 +621,128 @@ end)
 
 local dragging = false
 local dragStartY = 0
-local dragFromTop = false
+local dragStartPosY = 0
+local dragMode = nil
+local DRAG_THRESHOLD = 90
+local DRAG_SNAP = 0.35
 
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then
+local function SnapOpen()
+	isHistoryOpen = true
+	HistorySheet.Visible = true
+	ShadeBg.Visible = true
+
+	CreateTween(ShadeBg, { BackgroundTransparency = 1 - OS_Themes[NotificationStyle].Overlay }, 0.22)
+	CreateTween(HistorySheet, { GroupTransparency = 0 }, 0.22)
+	CreateTween(HistoryCard, { Position = OPEN_POS }, DRAG_SNAP, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+end
+
+local function SnapClose()
+	isHistoryOpen = false
+
+	CreateTween(ShadeBg, { BackgroundTransparency = 1 }, 0.2)
+	CreateTween(HistorySheet, { GroupTransparency = 1 }, 0.2)
+	CreateTween(HistoryCard, { Position = CLOSED_POS }, DRAG_SNAP, Enum.EasingStyle.Quart, Enum.EasingDirection.In)
+
+	task.delay(0.22, function()
+		if not isHistoryOpen then
+			ShadeBg.Visible = false
+			HistorySheet.Visible = false
+		end
+	end)
+end
+
+local function OpenHistory()
+	if isHistoryOpen then return end
+	SnapOpen()
+end
+
+local function CloseHistory()
+	if not isHistoryOpen then return end
+	SnapClose()
+end
+
+local function ToggleHistory()
+	if isHistoryOpen then
+		CloseHistory()
+	else
+		OpenHistory()
+	end
+end
+
+local function Clamp(n, minv, maxv)
+	return math.max(minv, math.min(maxv, n))
+end
+
+GestureBar.InputBegan:Connect(function(input)
+	if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
 		return
 	end
 
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStartY = input.Position.Y
-		dragFromTop = (not isHistoryOpen and dragStartY <= 40) or (isHistoryOpen and dragStartY <= 120)
-	end
+	dragging = true
+	dragStartY = input.Position.Y
+	dragStartPosY = HistoryCard.Position.Y.Scale
+	dragMode = isHistoryOpen and "close" or "open"
 end)
 
-UserInputService.InputChanged:Connect(function(input, gameProcessed)
-	if gameProcessed or not dragging or not dragFromTop then
+UserInputService.InputChanged:Connect(function(input)
+	if not dragging then
 		return
 	end
 
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		local deltaY = input.Position.Y - dragStartY
+	if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then
+		return
+	end
 
-		if not isHistoryOpen and deltaY > 70 then
-			OpenHistory()
+	local deltaY = input.Position.Y - dragStartY
+	local screenH = workspace.CurrentCamera.ViewportSize.Y
+
+	if dragMode == "open" then
+		-- ลากลงจากข้างบน: ขยับจากนอกจอเข้ากลางจอ
+		local progress = Clamp(deltaY / DRAG_THRESHOLD, 0, 1)
+		local yScale = (-0.45) + ((0.5 + 0.45) * progress)
+		HistoryCard.Position = UDim2.new(0.5, 0, yScale, 0)
+
+		if progress >= 1 then
 			dragging = false
-		elseif isHistoryOpen and deltaY < -70 then
-			CloseHistory()
+			SnapOpen()
+		end
+
+	elseif dragMode == "close" then
+		-- ลากขึ้นตอนเปิดอยู่: ดันกลับขึ้นไปปิด
+		local progress = Clamp((-deltaY) / DRAG_THRESHOLD, 0, 1)
+		local yScale = 0.5 + ((-0.45 - 0.5) * progress)
+		HistoryCard.Position = UDim2.new(0.5, 0, yScale, 0)
+
+		if progress >= 1 then
 			dragging = false
+			SnapClose()
 		end
 	end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = false
-		dragFromTop = false
+	if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
+		return
+	end
+
+	if not dragging then
+		return
+	end
+
+	dragging = false
+
+	if dragMode == "open" then
+		if (HistoryCard.Position.Y.Scale >= 0.12) then
+			SnapOpen()
+		else
+			SnapClose()
+		end
+	elseif dragMode == "close" then
+		if (HistoryCard.Position.Y.Scale <= 0.05) then
+			SnapClose()
+		else
+			SnapOpen()
+		end
 	end
 end)
 
