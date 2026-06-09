@@ -749,7 +749,7 @@ CancelBtn.ZIndex = 902
 Instance.new("UICorner", CancelBtn).CornerRadius = UDim.new(0, 6)
 
 local CancelStroke = Instance.new("UIStroke", CancelBtn)
-CancelStroke.Color = Color3.fromRGB(80, 90, 110) -- ขอบปุ่ม Cancel
+CancelStroke.Color = Color3.fromRGB(80, 90, 110) 
 CancelStroke.Thickness = 1.2
 CancelStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
@@ -759,7 +759,7 @@ local timeoutTask = nil
 local function resetDestroySequence()
     destroyStage = 0
     if timeoutTask then 
-        task.cancel(timeoutTask) 
+        pcall(function() task.cancel(timeoutTask) end)
         timeoutTask = nil 
     end
     
@@ -790,6 +790,7 @@ ClosedBtn.Activated:Connect(function()
         CreateTween(ConfirmStroke, {Transparency = 0}, 0.4)
         
         timeoutTask = task.delay(4, function()
+            timeoutTask = nil 
             if destroyStage > 0 then resetDestroySequence() end
         end)
     end
@@ -798,14 +799,17 @@ end)
 ActionBtn.Activated:Connect(function()
     if destroyStage == 1 then
         destroyStage = 2
-        if timeoutTask then task.cancel(timeoutTask) end
+        if timeoutTask then 
+            pcall(function() task.cancel(timeoutTask) end)
+            timeoutTask = nil 
+        end
         
         WarningTitle.Text = "LAST WARNING!"
-        WarningTitle.TextColor3 = Color3.fromRGB(0, 200, 255)
+        WarningTitle.TextColor3 = Color3.fromRGB(0, 200, 255) 
         WarningDesc.Text = "This action cannot be undone. DESTROY HUB?"
         ActionBtn.Text = "DESTROY"
         ActionBtn.BackgroundColor3 = Color3.fromRGB(0, 50, 150)
-        ActionStroke.Color = Color3.fromRGB(0, 255, 255)
+        ActionStroke.Color = Color3.fromRGB(0, 255, 255) 
         
         CreateTween(ConfirmBox, {Rotation = 4}, 0.05, Enum.EasingStyle.Sine, Enum.EasingDirection.Out).Completed:Connect(function()
             CreateTween(ConfirmBox, {Rotation = -4}, 0.05, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut).Completed:Connect(function()
@@ -814,6 +818,7 @@ ActionBtn.Activated:Connect(function()
         end)
         
         timeoutTask = task.delay(3, function()
+            timeoutTask = nil 
             if destroyStage > 0 then resetDestroySequence() end
         end)
         
@@ -1198,7 +1203,7 @@ function WindowAPI:CreateTab(name, target, isAuto)
     local b = Instance.new("TextButton", NavArea)
     b.Size = UDim2.new(0, 105, 0, 36)
     b.BackgroundColor3 = CONFIG.NavBtnColor or Color3.fromRGB(35, 35, 40)
-    b.BackgroundTransparency = 0.3
+    b.BackgroundTransparency = 0 -- ทึบ 100%
     b.Text = name
     b.TextColor3 = Color3.new(0.9, 0.9, 0.9)
     b.Font = Enum.Font.GothamBold
@@ -1207,16 +1212,18 @@ function WindowAPI:CreateTab(name, target, isAuto)
     b.ZIndex = 12
     
     local bStroke = Instance.new("UIStroke", b)
-    bStroke.Color = Color3.new(1, 1, 1)
-    bStroke.Transparency = 0.85
+    bStroke.Color = Color3.fromRGB(60, 60, 70)
+    bStroke.Transparency = 0.5
+    bStroke.Thickness = 1.2
     
+    -- แก้ Hover ให้เรืองแสงที่ขอบแทน ไม่ยุ่งกับความโปร่งใสแล้ว
     b.MouseEnter:Connect(function() 
-        CreateTween(b, {BackgroundTransparency = 0, TextColor3 = Color3.new(1, 1, 1)}) 
-        CreateTween(bStroke, {Transparency = 0.5})
+        CreateTween(b, {TextColor3 = Color3.new(1, 1, 1)}) 
+        CreateTween(bStroke, {Color = Color3.new(1, 1, 1), Transparency = 0})
     end)
     b.MouseLeave:Connect(function() 
-        CreateTween(b, {BackgroundTransparency = 0.3, TextColor3 = Color3.new(0.9, 0.9, 0.9)}) 
-        CreateTween(bStroke, {Transparency = 0.85})
+        CreateTween(b, {TextColor3 = Color3.new(0.9, 0.9, 0.9)}) 
+        CreateTween(bStroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5})
     end)
 
     local TabAPI = {}
@@ -1229,13 +1236,14 @@ function WindowAPI:CreateTab(name, target, isAuto)
         local frame = Instance.new("Frame", TabPage)
         frame.Size = UDim2.new(0.96, 0, 0, 34)
         frame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-        frame.BackgroundTransparency = 0.5
+        frame.BackgroundTransparency = 0 -- ทึบ 100%
         Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
         frame.ZIndex = 14
         
         local stroke = Instance.new("UIStroke", frame)
-        stroke.Color = Color3.fromRGB(255, 255, 255)
-        stroke.Transparency = 0.9
+        stroke.Color = Color3.fromRGB(60, 60, 70) -- ขอบสไตล์โมเดิร์น
+        stroke.Transparency = 0.5
+        stroke.Thickness = 1.2
 
         local lbl = Instance.new("TextLabel", frame)
         lbl.Size = UDim2.new(1, -16, 1, 0)
@@ -1257,7 +1265,7 @@ function WindowAPI:CreateTab(name, target, isAuto)
         local btn = Instance.new("TextButton", TabPage)
         btn.Size = UDim2.new(0.96, 0, 0, 42)
         btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-        btn.BackgroundTransparency = 0.5
+        btn.BackgroundTransparency = 0 -- ทึบ 100%
         btn.Text = "  " .. (cfg.Name or "Button")
         btn.TextColor3 = Color3.new(1, 1, 1)
         btn.Font = Enum.Font.GothamBold
@@ -1267,16 +1275,16 @@ function WindowAPI:CreateTab(name, target, isAuto)
         btn.ZIndex = 15
         
         local stroke = Instance.new("UIStroke", btn)
-        stroke.Color = CONFIG.NavBtnColor or Color3.fromRGB(100, 100, 110)
-        stroke.Transparency = 0.8
+        stroke.Color = Color3.fromRGB(60, 60, 70)
+        stroke.Transparency = 0.5
+        stroke.Thickness = 1.2
         
+        -- ชี้แล้วขอบเรืองแสงสีธีม (โคตรเท่)
         btn.MouseEnter:Connect(function() 
-            CreateTween(btn, {BackgroundTransparency = 0.3}) 
-            CreateTween(stroke, {Transparency = 0.4})
+            CreateTween(stroke, {Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255), Transparency = 0})
         end)
         btn.MouseLeave:Connect(function() 
-            CreateTween(btn, {BackgroundTransparency = 0.5}) 
-            CreateTween(stroke, {Transparency = 0.8})
+            CreateTween(stroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5})
         end)
         btn.MouseButton1Down:Connect(function() CreateTween(btn, {Size = UDim2.new(0.94, 0, 0, 40)}) end)
         btn.MouseButton1Up:Connect(function() CreateTween(btn, {Size = UDim2.new(0.96, 0, 0, 42)}) end)
@@ -1295,15 +1303,16 @@ function WindowAPI:CreateTab(name, target, isAuto)
         local btn = Instance.new("TextButton", TabPage)
         btn.Size = UDim2.new(0.96, 0, 0, 44)
         btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-        btn.BackgroundTransparency = 0.5
+        btn.BackgroundTransparency = 0 -- ทึบ 100%
         btn.Text = ""
         btn.AutoButtonColor = false
         Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
         btn.ZIndex = 15
         
         local stroke = Instance.new("UIStroke", btn)
-        stroke.Color = Color3.fromRGB(255, 255, 255)
-        stroke.Transparency = 0.9
+        stroke.Color = Color3.fromRGB(60, 60, 70)
+        stroke.Transparency = 0.5
+        stroke.Thickness = 1.2
 
         local title = Instance.new("TextLabel", btn)
         title.Size = UDim2.new(1, -64, 1, 0)
@@ -1330,8 +1339,8 @@ function WindowAPI:CreateTab(name, target, isAuto)
         Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
         knob.ZIndex = 17
 
-        btn.MouseEnter:Connect(function() CreateTween(stroke, {Transparency = 0.5}) end)
-        btn.MouseLeave:Connect(function() CreateTween(stroke, {Transparency = 0.9}) end)
+        btn.MouseEnter:Connect(function() CreateTween(stroke, {Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255), Transparency = 0}) end)
+        btn.MouseLeave:Connect(function() CreateTween(stroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5}) end)
 
         local function toggle(Value)
             if Value == nil then s = not s else s = Value end
@@ -1346,20 +1355,22 @@ function WindowAPI:CreateTab(name, target, isAuto)
             CurrentValue = s
         }
     end
+
     function TabAPI:CreateNotepad(cfg)
         local val = cfg.CurrentValue or cfg.Default or ""
         local placeholder = cfg.Placeholder or "พิมพ์อะไรสักอย่างดิวะ..."
 
         local sf = Instance.new("Frame", TabPage)
-        sf.Size = UDim2.new(0.96, 0, 0, 130) -- กล่องใหญ่สะใจ พิมพ์ได้ยาวๆ
+        sf.Size = UDim2.new(0.96, 0, 0, 130)
         sf.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-        sf.BackgroundTransparency = 0.5
+        sf.BackgroundTransparency = 0 -- ทึบ 100%
         Instance.new("UICorner", sf).CornerRadius = UDim.new(0, 12)
         sf.ZIndex = 15
 
         local stroke = Instance.new("UIStroke", sf)
-        stroke.Color = Color3.fromRGB(255, 255, 255)
-        stroke.Transparency = 0.9
+        stroke.Color = Color3.fromRGB(60, 60, 70)
+        stroke.Transparency = 0.5
+        stroke.Thickness = 1.2
 
         local title = Instance.new("TextLabel", sf)
         title.Size = UDim2.new(1, -24, 0, 24)
@@ -1380,8 +1391,9 @@ function WindowAPI:CreateTab(name, target, isAuto)
         boxBg.ZIndex = 16
 
         local boxStroke = Instance.new("UIStroke", boxBg)
-        boxStroke.Color = CONFIG.NavBtnColor or Color3.fromRGB(100, 100, 110)
-        boxStroke.Transparency = 0.7
+        boxStroke.Color = Color3.fromRGB(60, 60, 70)
+        boxStroke.Transparency = 0.5
+        boxStroke.Thickness = 1
 
         local textbox = Instance.new("TextBox", boxBg)
         textbox.Size = UDim2.new(1, -16, 1, -16)
@@ -1400,19 +1412,17 @@ function WindowAPI:CreateTab(name, target, isAuto)
         textbox.MultiLine = true 
         textbox.ZIndex = 17
 
-        sf.MouseEnter:Connect(function() CreateTween(stroke, {Transparency = 0.5}) end)
-        sf.MouseLeave:Connect(function() CreateTween(stroke, {Transparency = 0.9}) end)
+        sf.MouseEnter:Connect(function() CreateTween(stroke, {Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255), Transparency = 0}) end)
+        sf.MouseLeave:Connect(function() CreateTween(stroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5}) end)
 
         textbox.Focused:Connect(function()
-            CreateTween(boxStroke, {Transparency = 0.1, Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255)}, 0.2)
+            CreateTween(boxStroke, {Transparency = 0, Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255)}, 0.2)
         end)
 
         textbox.FocusLost:Connect(function()
-            CreateTween(boxStroke, {Transparency = 0.7, Color = CONFIG.NavBtnColor or Color3.fromRGB(100, 100, 110)}, 0.2)
+            CreateTween(boxStroke, {Transparency = 0.5, Color = Color3.fromRGB(60, 60, 70)}, 0.2)
             val = textbox.Text
-            if cfg.Callback then
-                pcall(cfg.Callback, val)
-            end
+            if cfg.Callback then pcall(cfg.Callback, val) end
         end)
 
         return {
@@ -1436,14 +1446,15 @@ function WindowAPI:CreateTab(name, target, isAuto)
         local sf = Instance.new("Frame", TabPage)
         sf.Size = UDim2.new(0.96, 0, 0, 68)
         sf.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-        sf.BackgroundTransparency = 0.5
+        sf.BackgroundTransparency = 0 -- ทึบ 100%
         Instance.new("UICorner", sf).CornerRadius = UDim.new(0, 12)
         sf.ZIndex = 15
         sf.Active = true
         
         local stroke = Instance.new("UIStroke", sf)
-        stroke.Color = Color3.fromRGB(255, 255, 255)
-        stroke.Transparency = 0.9
+        stroke.Color = Color3.fromRGB(60, 60, 70)
+        stroke.Transparency = 0.5
+        stroke.Thickness = 1.2
         
         local t = Instance.new("TextLabel", sf)
         t.Size = UDim2.new(1, -24, 0, 24)
@@ -1471,8 +1482,8 @@ function WindowAPI:CreateTab(name, target, isAuto)
         Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
         fill.ZIndex = 17
         
-        sf.MouseEnter:Connect(function() CreateTween(stroke, {Transparency = 0.5}) end)
-        sf.MouseLeave:Connect(function() CreateTween(stroke, {Transparency = 0.9}) end)
+        sf.MouseEnter:Connect(function() CreateTween(stroke, {Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255), Transparency = 0}) end)
+        sf.MouseLeave:Connect(function() CreateTween(stroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5}) end)
 
         local function updateSlider(customVal)
             if customVal then
@@ -1488,14 +1499,12 @@ function WindowAPI:CreateTab(name, target, isAuto)
             pcall(cfg.Callback, val)
         end
 
-        -- จังหวะกดลาก ให้ปุ่มมันขยายแอคทีฟขึ้นมานิดนึง
         bar.InputBegan:Connect(function(i) 
             if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) then 
                 dragging = true 
                 CreateTween(bar, {Size = UDim2.new(0.93, 0, 0, 22), Position = UDim2.new(0.035, 0, 0, 36)}, 0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
             end 
         end)
-        
         
         UserInputService.InputEnded:Connect(function(i) 
             if (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) then 
@@ -1523,14 +1532,15 @@ function WindowAPI:CreateTab(name, target, isAuto)
         local df = Instance.new("Frame", TabPage)
         df.Size = closedSize
         df.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-        df.BackgroundTransparency = 0.5
+        df.BackgroundTransparency = 0 -- ทึบ 100% เลยสัส
         df.ClipsDescendants = true
         df.ZIndex = 15
         Instance.new("UICorner", df).CornerRadius = UDim.new(0, 12)
 
         local stroke = Instance.new("UIStroke", df)
-        stroke.Color = Color3.fromRGB(255, 255, 255)
-        stroke.Transparency = 0.9
+        stroke.Color = Color3.fromRGB(60, 60, 70)
+        stroke.Transparency = 0.5
+        stroke.Thickness = 1.2
 
         local mb = Instance.new("TextButton", df)
         mb.Size = UDim2.new(1, 0, 0, 42)
@@ -1567,8 +1577,9 @@ function WindowAPI:CreateTab(name, target, isAuto)
         DropList.Padding = UDim.new(0, 4)
         DropList.SortOrder = Enum.SortOrder.LayoutOrder
 
-        df.MouseEnter:Connect(function() CreateTween(stroke, {Transparency = 0.5}) end)
-        df.MouseLeave:Connect(function() CreateTween(stroke, {Transparency = 0.9}) end)
+        -- ลูกเล่น Hover ขอบเรืองแสง โคตรเท่
+        df.MouseEnter:Connect(function() CreateTween(stroke, {Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255), Transparency = 0}) end)
+        df.MouseLeave:Connect(function() CreateTween(stroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5}) end)
 
         local function toggleDropdown()
             open = not open
@@ -1587,16 +1598,29 @@ function WindowAPI:CreateTab(name, target, isAuto)
                 local o = Instance.new("TextButton", DropScroll)
                 o.Size = UDim2.new(1, -8, 0, 28)
                 o.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-                o.BackgroundTransparency = 0.3
+                o.BackgroundTransparency = 0 -- ทึบ 100% ตัวเลือกย่อย
                 o.Text = tostring(opt)
                 o.TextColor3 = Color3.fromRGB(200, 200, 205)
                 o.Font = Enum.Font.GothamSemibold
                 o.TextSize = 12
                 o.ZIndex = 17
                 Instance.new("UICorner", o).CornerRadius = UDim.new(0, 8)
+                
+                -- ใส่กรอบให้ตัวเลือกย่อยด้วย
+                local oStroke = Instance.new("UIStroke", o)
+                oStroke.Color = Color3.fromRGB(60, 60, 70)
+                oStroke.Transparency = 0.7
+                oStroke.Thickness = 1
 
-                o.MouseEnter:Connect(function() CreateTween(o, {BackgroundTransparency = 0, TextColor3 = Color3.new(1, 1, 1)}, 0.1) end)
-                o.MouseLeave:Connect(function() CreateTween(o, {BackgroundTransparency = 0.3, TextColor3 = Color3.fromRGB(200, 200, 205)}, 0.1) end)
+                -- ตัวเลือกย่อยก็มี Hover ว้อยยยย
+                o.MouseEnter:Connect(function() 
+                    CreateTween(o, {BackgroundColor3 = Color3.fromRGB(40, 40, 45), TextColor3 = Color3.new(1, 1, 1)}, 0.1) 
+                    CreateTween(oStroke, {Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255), Transparency = 0})
+                end)
+                o.MouseLeave:Connect(function() 
+                    CreateTween(o, {BackgroundColor3 = Color3.fromRGB(20, 20, 25), TextColor3 = Color3.fromRGB(200, 200, 205)}, 0.1) 
+                    CreateTween(oStroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.7})
+                end)
 
                 o.MouseButton1Click:Connect(function()
                     mb.Text = "  " .. (cfg.Name or "Dropdown") .. " : " .. tostring(opt)
@@ -1638,11 +1662,22 @@ function WindowAPI:CreateTab(name, target, isAuto)
                 local lb = Instance.new("TextButton", TabPage)
                 lb.Size = UDim2.new(0.96, 0, 0, 42)
                 lb.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+                lb.BackgroundTransparency = 0 -- ทึบ
                 lb.Text = " Load String: " .. name
                 lb.TextColor3 = Color3.new(1, 1, 1)
                 lb.Font = Enum.Font.GothamBold
                 Instance.new("UICorner", lb).CornerRadius = UDim.new(0, 12)
                 lb.ZIndex = 15
+                
+                -- กรอบปุ่ม Load String
+                local lbStroke = Instance.new("UIStroke", lb)
+                lbStroke.Color = Color3.fromRGB(60, 60, 70)
+                lbStroke.Transparency = 0.5
+                lbStroke.Thickness = 1.2
+                
+                lb.MouseEnter:Connect(function() CreateTween(lbStroke, {Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255), Transparency = 0}) end)
+                lb.MouseLeave:Connect(function() CreateTween(lbStroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5}) end)
+                
                 lb.MouseButton1Click:Connect(function() pcall(function() loadstring(game:HttpGet(target))() end) end)
             end
             Instance.new("BoolValue", TabPage).Name = "HasRan"
@@ -1653,10 +1688,9 @@ function WindowAPI:CreateTab(name, target, isAuto)
     if isAuto then OpenTab() end
 
     TabAPI.TabPage = TabPage
-    
+
     return TabAPI 
 end
-
 
     local SettingPage = Instance.new("ScrollingFrame", PageArea)
     SettingPage.Size = UDim2.new(1, 0, 1, 0)
