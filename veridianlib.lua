@@ -1212,7 +1212,7 @@ function WindowAPI:CreateTab(name, target, isAuto)
     b.ZIndex = 12
     
     local bStroke = Instance.new("UIStroke", b)
-    bStroke.Color = Color3.fromRGB(60, 60, 70)
+    bStroke.Color = Color3.fromRGB(0, 255, 255)
     bStroke.Transparency = 0.5
     bStroke.Thickness = 1.2
     
@@ -1690,7 +1690,8 @@ function WindowAPI:CreateTab(name, target, isAuto)
     TabAPI.TabPage = TabPage
 
     return TabAPI 
-end
+end 
+ 
 
     local SettingPage = Instance.new("ScrollingFrame", PageArea)
     SettingPage.Size = UDim2.new(1, 0, 1, 0)
