@@ -1443,10 +1443,32 @@ function WindowAPI:CreateTab(name, target, isAuto)
         local val = cfg.CurrentValue or cfg.Default or min
         local suffix = cfg.Suffix or ""
         
+        -- โคตรตึง: เช็คว่ามึงจะเอาทศนิยมไหม ถ้าใส่ true มา กูจัดให้ 3 ตำแหน่ง 
+        -- หรือถ้ามึงห้าวใส่เป็นเลขมา (เช่น UseDecimals = 2) ก็เอาตามนั้นไปเลย
+        local useDecimals = cfg.UseDecimals or cfg["3decimalplaces"] or false
+        local decimals = type(useDecimals) == "number" and useDecimals or (useDecimals and 3 or 0)
+        local decMult = 10 ^ decimals
+
+        -- ฟังก์ชันปัดเศษแบบคนฉลาด
+        local function getFormattedValue(number)
+            if decimals > 0 then
+                -- ปัดเศษให้ตรงกับจำนวนตำแหน่ง
+                local rounded = math.floor((number * decMult) + 0.5) / decMult
+                -- โชว์เลขแบบมี 0 ต่อท้ายให้ครบ (เช่น 1.500)
+                return rounded, string.format("%."..decimals.."f", rounded) 
+            else
+                -- ถ้าไม่เอาทศนิยมก็ปัดเศษลงทิ้งแม่งให้หมดแบบเดิม
+                return math.floor(number), tostring(math.floor(number))
+            end
+        end
+
+        -- ปรับค่าเริ่มต้นให้ตรงสเปค
+        local val, displayVal = getFormattedValue(val)
+        
         local sf = Instance.new("Frame", TabPage)
         sf.Size = UDim2.new(0.96, 0, 0, 68)
         sf.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-        sf.BackgroundTransparency = 0 -- ทึบ 100%
+        sf.BackgroundTransparency = 0
         Instance.new("UICorner", sf).CornerRadius = UDim.new(0, 12)
         sf.ZIndex = 15
         sf.Active = true
@@ -1460,7 +1482,7 @@ function WindowAPI:CreateTab(name, target, isAuto)
         t.Size = UDim2.new(1, -24, 0, 24)
         t.Position = UDim2.new(0, 16, 0, 6)
         t.BackgroundTransparency = 1
-        t.Text = (cfg.Name or "Slider") .. " : " .. val .. suffix
+        t.Text = (cfg.Name or "Slider") .. " : " .. displayVal .. suffix
         t.TextColor3 = Color3.new(1, 1, 1)
         t.Font = Enum.Font.GothamBold
         t.TextSize = 13
@@ -1486,16 +1508,21 @@ function WindowAPI:CreateTab(name, target, isAuto)
         sf.MouseLeave:Connect(function() CreateTween(stroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5}) end)
 
         local function updateSlider(customVal)
+            local newVal = val
             if customVal then
-                val = math.clamp(customVal, min, max)
-                local p = (val - min) / (max - min)
+                newVal = math.clamp(customVal, min, max)
+                local p = (newVal - min) / (max - min)
                 CreateTween(fill, {Size = UDim2.new(p, 0, 1, 0)}, 0.1)
             else
                 local p = math.clamp((UserInputService:GetMouseLocation().X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
                 CreateTween(fill, {Size = UDim2.new(p, 0, 1, 0)}, 0.05)
-                val = math.floor(min + (p * (max - min)))
+                newVal = min + (p * (max - min))
             end
-            t.Text = (cfg.Name or "Slider") .. " : " .. val .. suffix
+            
+            -- อัปเดตค่าและข้อความให้ตรงกับเงื่อนไข
+            val, displayVal = getFormattedValue(newVal)
+            
+            t.Text = (cfg.Name or "Slider") .. " : " .. displayVal .. suffix
             pcall(cfg.Callback, val)
         end
 
