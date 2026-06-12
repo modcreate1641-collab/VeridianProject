@@ -1261,37 +1261,55 @@ function WindowAPI:CreateTab(name, target, isAuto)
         }
     end
     
-    function TabAPI:CreateButton(cfg)
-        local btn = Instance.new("TextButton", TabPage)
-        btn.Size = UDim2.new(0.96, 0, 0, 42)
-        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-        btn.BackgroundTransparency = 0 -- ทึบ 100%
-        btn.Text = "  " .. (cfg.Name or "Button")
-        btn.TextColor3 = Color3.new(1, 1, 1)
-        btn.Font = Enum.Font.GothamBold
-        btn.TextSize = 13
-        btn.TextXAlignment = "Left"
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
-        btn.ZIndex = 15
-        
-        local stroke = Instance.new("UIStroke", btn)
-        stroke.Color = Color3.fromRGB(60, 60, 70)
-        stroke.Transparency = 0.5
-        stroke.Thickness = 1.2
-        
-        -- ชี้แล้วขอบเรืองแสงสีธีม (โคตรเท่)
-        btn.MouseEnter:Connect(function() 
-            CreateTween(stroke, {Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255), Transparency = 0})
-        end)
-        btn.MouseLeave:Connect(function() 
-            CreateTween(stroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5})
-        end)
-        btn.MouseButton1Down:Connect(function() CreateTween(btn, {Size = UDim2.new(0.94, 0, 0, 40)}) end)
-        btn.MouseButton1Up:Connect(function() CreateTween(btn, {Size = UDim2.new(0.96, 0, 0, 42)}) end)
-        btn.MouseButton1Click:Connect(function() pcall(cfg.Callback) end)
-        
-        return {Callback = cfg.Callback}
+local function ToRawURL(url)
+    if type(url) ~= "string" then return url end
+    if url:find("github.com") and not url:find("raw.githubusercontent.com") then
+        url = url:gsub("github.com", "raw.githubusercontent.com")
+        url = url:gsub("/blob/", "/")
     end
+    return url
+end
+
+function TabAPI:CreateButton(cfg)
+    local btn = Instance.new("TextButton", TabPage)
+    btn.Size = UDim2.new(0.96, 0, 0, 42)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    btn.BackgroundTransparency = 0
+    btn.Text = "  " .. (cfg.Name or "Button")
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    btn.TextXAlignment = "Left"
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
+    btn.ZIndex = 15
+    
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Color = Color3.fromRGB(60, 60, 70)
+    stroke.Transparency = 0.5
+    stroke.Thickness = 1.2
+    
+    btn.MouseEnter:Connect(function() 
+        CreateTween(stroke, {Color = CONFIG.NavBtnColor or Color3.fromRGB(0, 170, 255), Transparency = 0})
+    end)
+    btn.MouseLeave:Connect(function() 
+        CreateTween(stroke, {Color = Color3.fromRGB(60, 60, 70), Transparency = 0.5})
+    end)
+    btn.MouseButton1Down:Connect(function() CreateTween(btn, {Size = UDim2.new(0.94, 0, 0, 40)}) end)
+    btn.MouseButton1Up:Connect(function() CreateTween(btn, {Size = UDim2.new(0.96, 0, 0, 42)}) end)
+    
+    btn.MouseButton1Click:Connect(function()
+        if cfg.Script and type(cfg.Script) == "string" then
+            local targetURL = ToRawURL(cfg.Script)
+            pcall(function()
+                loadstring(game:HttpGet(targetURL))()
+            end)
+        elseif cfg.Callback and type(cfg.Callback) == "function" then
+            pcall(cfg.Callback)
+        end
+    end)
+    
+    return {Callback = cfg.Callback}
+end
     
     function TabAPI:CreateToggle(cfg)
         local s = cfg.CurrentValue
