@@ -1,45 +1,29 @@
-# 📜 Terms of Service & Open-Source License Code of Conduct
-Welcome to my software development area. Before you use any source code or programming structures in this area, please read and strictly adhere to these terms of service and copyright law regulations.
-These terms are not arbitrary; they are protected and enforceable under international copyright law from the moment the source code is created (Automatic Copyright Protection).
-## 🔍 1. Right to Inspect & Learn Source Code
-### 📌 Requirements
-All visitors or users **have the right to view, copy for personal use, and study the entire source code structure available here free of charge.**
-### 💡 Technical and Ideological Reasons
-The primary goal of open-access is to promote learning and expand the boundaries of programming knowledge.  1. To allow new developers to study efficient coding practices (Best Practices), reading other people's code is one of the best ways to develop your skills.
-## 🛠️ 2. Right to Modify & Fork
-### 📌 Requirements
-You **can modify, adapt, improve, or create a "Derivative Work" from this source code to suit your own use or develop your own version of the software.**
-### ⚖️ Based on Copyright Law
-According to international copyright law, when you modify or adapt the source code to create something "unique" or add new creative elements, the rights to the newly created code belong to you (but the original structure is still protected by the copyright of the original).
-> 📖 **Further Study:** Wikipedia: Derivative Work
+# 📜 Terms of Service & Copyright Penalties (MUST READ)
+> ⚠️ **CRITICAL WARNING FOR COPYCATS / คำเตือนสำหรับพวกชอบก๊อป**
+> ลิขสิทธิ์ซอฟต์แวร์นี้คุ้มครองทันทีอัตโนมัติทั่วโลก (Berne Convention) หากคุณคัดลอกซอร์สโค้ด/ดีไซน์ไปแอบอ้างเปลี่ยนชื่อตัวแปร บทลงโทษจะขึ้นอยู่กับประเทศที่คุณอาศัยอยู่ดังนี้ (ไม่มียกฟ้องเพราะเป็นเยาวชน พ่อแม่ต้องร่วมชดใช้ค่าเสียหาย):
+> 
+| ประเทศ / Language | ตัวบทกฎหมาย (Law) | บทลงโทษสูงสุด (Max Penalties) | เหตุผลสั้นๆ (Reason) |
+|---|---|---|---|
+| 🇹🇭 **ไทย (Thai)** | พ.ร.บ.ลิขสิทธิ์ พ.ศ. 2537 | **ปรับ 800,000 บาท / จำคุก 4 ปี** | ก๊อปไปเปลี่ยนชื่อตัวแปรแอบอ้างทำเพื่อการค้า/ติดคีย์ |
+| 🇺🇸 **USA (English)** | Title 17 U.S.C. & DMCA | **$150,000 Fine + Device/IP Ban** | Willful copyright infringement & Github/Discord Takedown. |
+| 🇨🇳 **中国 (Chinese)** | Software Protection Regs | **5,000,000 RMB / 7 Years Jail** | 严厉打击剽窃代码、更改变量名并冒充自己作品的行为。 |
+| 🇰🇷 **한국어 (Korean)** | Game Industry Promotion Act | **50,000,000 Won / 5 Years Jail** | 무단 코드 도용 및 불법 변형 행위는 형사 처벌 대상입니다. |
+## 🔍 1. Right to Inspect, Learn & Modify (สิทธิ์ที่ทำได้)
+ * **Study & Fork:** You have the right to view, study, and copy the source code for personal use free of charge.
+ * **Derivative Work:** You can modify or adapt the code to build your own unique version based on international law.
+ * 📖 **Study More:** Wikipedia: Derivative Work
+## ⛔ 2. Strict Prohibitions & Plagiarism (ข้อห้ามเด็ดขาด)
+ * **No Deceptive Refactoring:** It is strictly prohibited to copy 100% of the original code, or merely rename variables (local btn ➡️ local button), rearrange lines, and claim ownership.
+ * **Parents Liability:** If a minor (child) commits copyright infringement, parents/legal guardians are strictly liable for all financial damages under the law.
+## 🔓 3. Open-Core & Library Policy (เงื่อนไขการใช้ API)
+ * **🟢 API (Open-Source):** The core API structure and integration functions are **100% FREE to use**. You can connect your scripts to our library freely.
+ * **🔴 UI & Source (Proprietary):** The UI Design, buttons, themes, animations, and front-end source code are copyrighted. **Do NOT copy or clone the interface.**
+### 📚 International Law Links (ลิงก์ตรงกฎหมายสากล)
+ * **TH:** https://th.wikipedia.org/wiki/พระราชบัญญัติลิขสิทธิ์_พ.ศ._2537
+ * **US:** https://en.wikipedia.org/wiki/Digital_Millennium_Copyright_Act
+ * **UK:** https://en.wikipedia.org/wiki/Copyright,_Designs_and_Patents_Act_1988
+ * **CN:** https://en.wikipedia.org/wiki/Software_copyright_of_China
+ * **KR:** https://en.wikipedia.org/wiki/Game_Industry_Promotion_Act
+ * **Global:** https://en.wikipedia.org/wiki/Berne_Convention
+> **"You can stand on the shoulders of giants to see further, but you cannot cut off the giant's head and claim it as your own."**
 >
-## ⛔ 3. Prohibitions and Legal Scope: Copying, adapting, or claiming ownership is prohibited.  (Anti-Plagiarism & Strict Restrictions)
-### 📌 Serious Requirements and Prohibitions
-* **It is prohibited to distribute, republish, or reproduce the 100% original source code under your own name.**
-* **Deceptive refactoring**, or merely renaming variables, changing font styles, adjusting line breaks, or making superficial changes to the code and then claiming it as your own without permission, is strictly prohibited.
-### ⚖️ Legal Protection and Consequences
-Such actions constitute clear copyright infringement, not just empty agreements on a website, but have binding legal consequences:
-1. **Right to Automatic Copyright Protection:** Under the Berne Convention, creative works such as software and computer code are protected by copyright.  1. Copyright protection is granted immediately upon being written to a data storage medium (e.g., on my GitHub), without the need for formal registration.
-2. **Protection under Thai Law:** Under the Copyright Act B.E. 2537 (and amendments), computer programs are considered literary works. Reproducing, modifying, or distributing them to the public without permission is considered copyright infringement, punishable by both civil and criminal penalties.
-3. **Digital Action (DMCA Takedown):** If copyright infringement is discovered in the form of copying and modifying variable names and then claiming ownership, a **DMCA Notice** will be filed with the service provider platform (e.g., GitHub, GitLab, or various hosting services) to immediately suspend access and delete the user account without exception.
-### 💡 Reason for this rule
-We are happy to share knowledge to help the developer community grow, but we do not tolerate **"irresponsible theft of intellectual property."** Changing a variable name from local btn = ... to local button = ... does not mean you created it yourself. Respecting the hard work of the original creator is important.  This is the most fundamental ethical principle for programmers.
-## 📚 Resources and International Laws for Further Study
-To gain a correct understanding at an international level, you can study the details of relevant laws at the link below:
-## 📚 International Copyright Laws & References
-
-You can study laws protecting source code, intellectual property, and penalties for software infringement from various countries.  You can find the relevant information at the links below:
-
-* **Thailand (TH):** Copyright Act B.E. 2537 (1994)
-https://th.wikipedia.org/wiki/พระราชบัญCฤษกรรมลิขสิทธิ์_พ.ศ._2537
-* **United States (US):** Digital Millennium Copyright Act (DMCA)
-https://en.wikipedia.org/wiki/Digital_Millennium_Copyright_Act
-* **United Kingdom (UK):** Copyright, Designs and Patents Act 1988 (CDPA)
-https://en.wikipedia.org/wiki/Copyright,_Designs_and_Patents_Act_1988
-* **China (CN):** Computer Software Protection Regulations
-https://en.wikipedia.org/wiki/Software_copyright_of_China
-* **South Korea (KR):** Game Industry Promotion Act (Anti-Cheat & Script Law)
-https://en.wikipedia.org/wiki/Game_Industry_Promotion_Act
-*  **International Treaty:** Berne Convention (Automatic Copyright Protection)
-https://en.wikipedia.org/wiki/Berne_Convention
-> **"You can stand on the shoulders of giants to see further (adapt and build upon), but you cannot cut off the giant's head and claim it as your own (copy and plagiarism)."** Please work together to create a livable and respectful developer community.
