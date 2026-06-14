@@ -33,33 +33,42 @@ if not isfolder(baseFolder) then makefolder(baseFolder) end
 if not isfolder(targetFolder) then makefolder(targetFolder) end
 if not isfolder(iconFolder) then makefolder(iconFolder) end
 
+-- [ BgAsset - ไม่ยุ่งตามสั่ง ]
 local bgName = targetFolder .. "/Cool background.png"
 local bgUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Cool%20background.png"
 
 local logoName = targetFolder .. "/furryLogo.png"
 local logoUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Texture7.jpg"
 
-local settingName = iconFolder .. "/setting icon.png"
-local settingUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Fluffy/refs/heads/main/setting%20icon.png"
+-- [ New Icons Setup - ชุดไอคอนโครงสร้างใหม่ ]
+local scriptIconName = iconFolder .. "/script.png"
+local scriptIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/script.png"
 
-local scripthubName = iconFolder .. "/scripthub icon.jpeg"
-local scripthubUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Fluffy/refs/heads/main/scripthub%20icon.jpeg"
+local serverIconName = iconFolder .. "/server.png"
+local serverIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/server.png"
 
-local scriptName = iconFolder .. "/script icon.png"
-local scriptUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Fluffy/refs/heads/main/script%20icon.png"
+local shopIconName = iconFolder .. "/shop.png"
+local shopIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/shop.png"
 
-local furryName = iconFolder .. "/furry icon.png"
-local furryUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Fluffy/refs/heads/main/furry%20icon.png"
+local aimIconName = iconFolder .. "/aim.png"
+local aimIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/aim.png"
 
-local aimName = iconFolder .. "/aim icon.png"
-local aimUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Fluffy/refs/heads/main/aim%20icon.png"
+local pinIconName = iconFolder .. "/pin.png"
+local pinIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/pin.png"
 
-local destroyName = iconFolder .. "/destroy icon.png"
-local destroyUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Fluffy/refs/heads/main/d416ad99167d8cd588a83d0d377fca0028a269fd6b8310b5b31aa6acd6a1d04b.0.png"
+local hardwareIconName = iconFolder .. "/hardware.png"
+local hardwareIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/hardware.png"
 
-local autoName = iconFolder .. "/auto.png"
-local autoUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Fluffy/refs/heads/main/auto.png"
+local homeIconName = iconFolder .. "/home.png"
+local homeIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/home.png"
 
+local settingIconName = iconFolder .. "/setting.png"
+local settingIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/setting.png"
+
+local powerIconName = iconFolder .. "/power.png"
+local powerIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/power.png"
+
+-- [ ดาวน์โหลด BgAsset ]
 if not isfile(bgName) then
     local s, content = pcall(game.HttpGet, game, bgUrl)
     if s and #content > 5000 then writefile(bgName, content) end
@@ -70,40 +79,52 @@ if not isfile(logoName) then
     if s and #content > 5000 then writefile(logoName, content) end
 end
 
-if not isfile(settingName) then
-    local s, content = pcall(game.HttpGet, game, settingUrl)
-    if s and #content > 0 then writefile(settingName, content) end
+-- [ ดาวน์โหลดชุดไอคอนใหม่ 9 ตัว ]
+if not isfile(scriptIconName) then
+    local s, content = pcall(game.HttpGet, game, scriptIconUrl)
+    if s and #content > 0 then writefile(scriptIconName, content) end
 end
 
-if not isfile(scripthubName) then
-    local s, content = pcall(game.HttpGet, game, scripthubUrl)
-    if s and #content > 0 then writefile(scripthubName, content) end
+if not isfile(serverIconName) then
+    local s, content = pcall(game.HttpGet, game, serverIconUrl)
+    if s and #content > 0 then writefile(serverIconName, content) end
 end
 
-if not isfile(scriptName) then
-    local s, content = pcall(game.HttpGet, game, scriptUrl)
-    if s and #content > 0 then writefile(scriptName, content) end
+if not isfile(shopIconName) then
+    local s, content = pcall(game.HttpGet, game, shopIconUrl)
+    if s and #content > 0 then writefile(shopIconName, content) end
 end
 
-if not isfile(furryName) then
-    local s, content = pcall(game.HttpGet, game, furryUrl)
-    if s and #content > 0 then writefile(furryName, content) end
+if not isfile(aimIconName) then
+    local s, content = pcall(game.HttpGet, game, aimIconUrl)
+    if s and #content > 0 then writefile(aimIconName, content) end
 end
 
-if not isfile(aimName) then
-    local s, content = pcall(game.HttpGet, game, aimUrl)
-    if s and #content > 0 then writefile(aimName, content) end
+if not isfile(pinIconName) then
+    local s, content = pcall(game.HttpGet, game, pinIconUrl)
+    if s and #content > 0 then writefile(pinIconName, content) end
 end
 
-if not isfile(destroyName) then
-    local s, content = pcall(game.HttpGet, game, destroyUrl)
-    if s and #content > 0 then writefile(destroyName, content) end
+if not isfile(hardwareIconName) then
+    local s, content = pcall(game.HttpGet, game, hardwareIconUrl)
+    if s and #content > 0 then writefile(hardwareIconName, content) end
 end
 
-if not isfile(autoName) then
-    local s, content = pcall(game.HttpGet, game, autoUrl)
-    if s and #content > 0 then writefile(autoName, content) end
+if not isfile(homeIconName) then
+    local s, content = pcall(game.HttpGet, game, homeIconUrl)
+    if s and #content > 0 then writefile(homeIconName, content) end
 end
+
+if not isfile(settingIconName) then
+    local s, content = pcall(game.HttpGet, game, settingIconUrl)
+    if s and #content > 0 then writefile(settingIconName, content) end
+end
+
+if not isfile(powerIconName) then
+    local s, content = pcall(game.HttpGet, game, powerIconUrl)
+    if s and #content > 0 then writefile(powerIconName, content) end
+end
+
 
 local function CreateTween(instance, properties, time, style, direction)
     local info = TweenService:Create(instance, TweenInfo.new(time or 0.2, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.Out), properties)
@@ -673,7 +694,7 @@ BtnIcon.Name = "DestroyIcon"
 BtnIcon.Size = UDim2.new(0, 20, 0, 20)
 BtnIcon.Position = UDim2.new(0.5, -10, 0.5, -10)
 BtnIcon.BackgroundTransparency = 1
-BtnIcon.Image = getcustomasset(CONFIG.BgFolder .. "/Icons/destroy icon.png")
+BtnIcon.Image = getcustomasset(CONFIG.BgFolder .. "/Icons/power.png")
 BtnIcon.ZIndex = 13
 
 -- [[ POPUP UI SETUP (MODERN BLUE THEME) ]]
@@ -847,7 +868,7 @@ SettingIcon.Name = "SettingIcon"
 SettingIcon.Size = UDim2.new(0, 24, 0, 24) 
 SettingIcon.Position = UDim2.new(0.5, -12, 0.5, -12) 
 SettingIcon.BackgroundTransparency = 1
-SettingIcon.Image = getcustomasset(CONFIG.BgFolder .. "/Icons/setting icon.png") 
+SettingIcon.Image = getcustomasset(CONFIG.BgFolder .. "/Icons/setting.png") 
 SettingIcon.ZIndex = 13
 
 TopSettingBtn.MouseEnter:Connect(function() 
@@ -1182,7 +1203,7 @@ function WindowAPI:UpdateTheme(newColor)
     end
 end
 
-function WindowAPI:CreateTab(name, target, isAuto)
+function WindowAPI:CreateTab(name, iconName, target, isAuto)
     local TabPage = Instance.new("ScrollingFrame", PageArea)
     TabPage.Size = UDim2.new(1, 0, 1, 0)
     TabPage.Position = UDim2.new(0, 20, 0, 0)
@@ -1203,28 +1224,67 @@ function WindowAPI:CreateTab(name, target, isAuto)
     local b = Instance.new("TextButton", NavArea)
     b.Size = UDim2.new(0, 105, 0, 36)
     b.BackgroundColor3 = CONFIG.NavBtnColor or Color3.fromRGB(35, 35, 40)
-    b.BackgroundTransparency = 0 -- ทึบ 100%
+    b.BackgroundTransparency = 0 
     b.Text = name
     b.TextColor3 = Color3.new(0.9, 0.9, 0.9)
     b.Font = Enum.Font.GothamBold
     b.TextSize = CONFIG.DefaultFontSize or 14
+    b.AutoButtonColor = false
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 12)
     b.ZIndex = 12
     
-    local bStroke = Instance.new("UIStroke", b)
-    bStroke.Color = Color3.fromRGB(0, 255, 255)
-    bStroke.Transparency = 0.5
-    bStroke.Thickness = 1.2
+    -- ระบบใส่ไอคอนด้วยชื่อไฟล์ (เช็คว่าถ้ามึงใส่ชื่อไอคอนมา ค่อยสร้างให้อัตโนมัติ)
+    if iconName and iconName ~= "" then
+        local btnIcon = Instance.new("ImageLabel", b)
+        btnIcon.Size = UDim2.new(0, 18, 0, 18)
+        btnIcon.Position = UDim2.new(0, 10, 0.5, 0)
+        btnIcon.AnchorPoint = Vector2.new(0, 0.5)
+        btnIcon.BackgroundTransparency = 1
+        -- ดึงภาพจากโฟลเดอร์ Icons ตามชื่อที่มึงส่งมาตรงๆ ไม่ต้องใช้ ID โง่ๆ อีกต่อไป
+        btnIcon.Image = getcustomasset(iconFolder .. "/" .. iconName)
+        btnIcon.ZIndex = 13
+        
+        -- ขยับตัวหนังสือไปทางขวาหน่อย เพื่อหลบให้ไอคอน
+        b.TextXAlignment = Enum.TextXAlignment.Left
+        b.TextPosition = UDim2.new(0, 34, 0, 0) -- หรือถ้าเวิร์กสเปซมึงใช้ Padding ก็ปรับตามสะดวก
+    end
     
-    -- แก้ Hover ให้เรืองแสงที่ขอบแทน ไม่ยุ่งกับความโปร่งใสแล้ว
+    local tabIndicator = Instance.new("Frame", b)
+    tabIndicator.Size = UDim2.new(0, 0, 0, 3)
+    tabIndicator.Position = UDim2.new(0.5, 0, 1, -4) 
+    tabIndicator.AnchorPoint = Vector2.new(0.5, 1)
+    tabIndicator.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+    tabIndicator.BorderSizePixel = 0
+    Instance.new("UICorner", tabIndicator).CornerRadius = UDim.new(0, 4)
+    
+    local bStroke = Instance.new("UIStroke", b)
+    bStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    bStroke.Color = Color3.fromRGB(0, 255, 255)
+    bStroke.Transparency = 1
+    bStroke.Thickness = 2
+    
     b.MouseEnter:Connect(function() 
         CreateTween(b, {TextColor3 = Color3.new(1, 1, 1)}) 
-        CreateTween(bStroke, {Color = Color3.new(1, 1, 1), Transparency = 0})
+        CreateTween(bStroke, {Transparency = 0}) 
     end)
+    
     b.MouseLeave:Connect(function() 
         CreateTween(b, {TextColor3 = Color3.new(0.9, 0.9, 0.9)}) 
-        CreateTween(bStroke, {Color = Color3.fromRGB(0, 255, 255), Transparency = 0.5})
+        if WindowAPI.CurrentTab ~= name then 
+            CreateTween(bStroke, {Transparency = 1})
+        end
     end)
+    
+    b.MouseButton1Click:Connect(function()
+        if WindowAPI.CurrentTab == name then return end
+        WindowAPI.CurrentTab = name
+        
+        CreateTween(bStroke, {Transparency = 0})
+        CreateTween(tabIndicator, {Size = UDim2.new(0, 60, 0, 3)}) 
+    end)
+    
+    return TabPage
+end
 
     local TabAPI = {}
     
