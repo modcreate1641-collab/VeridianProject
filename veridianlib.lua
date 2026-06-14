@@ -33,98 +33,46 @@ if not isfolder(baseFolder) then makefolder(baseFolder) end
 if not isfolder(targetFolder) then makefolder(targetFolder) end
 if not isfolder(iconFolder) then makefolder(iconFolder) end
 
--- [ BgAsset - ไม่ยุ่งตามสั่ง ]
-local bgName = targetFolder .. "/Cool background.png"
-local bgUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Cool%20background.png"
+-- สร้างตารางเก็บข้อมูลไฟล์ที่จะดาวน์โหลด จะได้วนลูปทีเดียว ไม่รก
+local assets = {
+    -- [ BgAsset ]
+    { path = targetFolder .. "/Cool background.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Cool%20background.png", minSize = 5000 },
+    { path = targetFolder .. "/furryLogo.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Texture7.jpg", minSize = 5000 },
+    
+    -- [ New Icons Setup ]
+    { path = iconFolder .. "/script.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/script.png", minSize = 0 },
+    { path = iconFolder .. "/server.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/server.png", minSize = 0 },
+    { path = iconFolder .. "/shop.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/shop.png", minSize = 0 },
+    { path = iconFolder .. "/aim.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/aim.png", minSize = 0 },
+    { path = iconFolder .. "/pin.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/pin.png", minSize = 0 },
+    { path = iconFolder .. "/hardware.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/hardware.png", minSize = 0 },
+    { path = iconFolder .. "/home.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/home.png", minSize = 0 },
+    { path = iconFolder .. "/setting.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/setting.png", minSize = 0 },
+    { path = iconFolder .. "/power.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/power.png", minSize = 0 }
+}
 
-local logoName = targetFolder .. "/furryLogo.png"
-local logoUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Texture7.jpg"
-
--- [ New Icons Setup - ชุดไอคอนโครงสร้างใหม่ ]
-local scriptIconName = iconFolder .. "/script.png"
-local scriptIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/script.png"
-
-local serverIconName = iconFolder .. "/server.png"
-local serverIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/server.png"
-
-local shopIconName = iconFolder .. "/shop.png"
-local shopIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/shop.png"
-
-local aimIconName = iconFolder .. "/aim.png"
-local aimIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/aim.png"
-
-local pinIconName = iconFolder .. "/pin.png"
-local pinIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/pin.png"
-
-local hardwareIconName = iconFolder .. "/hardware.png"
-local hardwareIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/hardware.png"
-
-local homeIconName = iconFolder .. "/home.png"
-local homeIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/home.png"
-
-local settingIconName = iconFolder .. "/setting.png"
-local settingIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/setting.png"
-
-local powerIconName = iconFolder .. "/power.png"
-local powerIconUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/power.png"
-
--- [ ดาวน์โหลด BgAsset ]
-if not isfile(bgName) then
-    local s, content = pcall(game.HttpGet, game, bgUrl)
-    if s and #content > 5000 then writefile(bgName, content) end
+-- ฟังก์ชันดาวน์โหลดแบบกันตาย (ลองใหม่ได้ 3 ครั้งถ้า Timed out)
+local function downloadFile(path, url, minSize)
+    if isfile(path) then return true end
+    
+    local maxRetries = 3
+    for i = 1, maxRetries do
+        local s, content = pcall(game.HttpGet, game, url)
+        if s and content and #content > minSize then
+            writefile(path, content)
+            return true
+        end
+        task.wait(1) -- รอ 1 วิเผื่อเน็ตกลับมาต่อค่อยลองใหม่
+    end
+    
+    warn("โหลดไฟล์ไม่สำเร็จหลังจากพยายาม 3 ครั้ง: " .. path)
+    return false
 end
 
-if not isfile(logoName) then
-    local s, content = pcall(game.HttpGet, game, logoUrl)
-    if s and #content > 5000 then writefile(logoName, content) end
+-- วนลูปดาวน์โหลดแม่งให้หมด
+for _, asset in ipairs(assets) do
+    downloadFile(asset.path, asset.url, asset.minSize)
 end
-
--- [ ดาวน์โหลดชุดไอคอนใหม่ 9 ตัว ]
-if not isfile(scriptIconName) then
-    local s, content = pcall(game.HttpGet, game, scriptIconUrl)
-    if s and #content > 0 then writefile(scriptIconName, content) end
-end
-
-if not isfile(serverIconName) then
-    local s, content = pcall(game.HttpGet, game, serverIconUrl)
-    if s and #content > 0 then writefile(serverIconName, content) end
-end
-
-if not isfile(shopIconName) then
-    local s, content = pcall(game.HttpGet, game, shopIconUrl)
-    if s and #content > 0 then writefile(shopIconName, content) end
-end
-
-if not isfile(aimIconName) then
-    local s, content = pcall(game.HttpGet, game, aimIconUrl)
-    if s and #content > 0 then writefile(aimIconName, content) end
-end
-
-if not isfile(pinIconName) then
-    local s, content = pcall(game.HttpGet, game, pinIconUrl)
-    if s and #content > 0 then writefile(pinIconName, content) end
-end
-
-if not isfile(hardwareIconName) then
-    local s, content = pcall(game.HttpGet, game, hardwareIconUrl)
-    if s and #content > 0 then writefile(hardwareIconName, content) end
-end
-
-if not isfile(homeIconName) then
-    local s, content = pcall(game.HttpGet, game, homeIconUrl)
-    if s and #content > 0 then writefile(homeIconName, content) end
-end
-
-if not isfile(settingIconName) then
-    local s, content = pcall(game.HttpGet, game, settingIconUrl)
-    if s and #content > 0 then writefile(settingIconName, content) end
-end
-
-if not isfile(powerIconName) then
-    local s, content = pcall(game.HttpGet, game, powerIconUrl)
-    if s and #content > 0 then writefile(powerIconName, content) end
-end
-
 
 local function CreateTween(instance, properties, time, style, direction)
     local info = TweenService:Create(instance, TweenInfo.new(time or 0.2, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.Out), properties)
