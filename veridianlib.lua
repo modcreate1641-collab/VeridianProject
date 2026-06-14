@@ -25,99 +25,50 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-local baseFolder = CONFIG and CONFIG.BgFolder or "VeridianConfig" -- ดักควายเผื่อ CONFIG เป็น nil
+local baseFolder = CONFIG and CONFIG.BgFolder or "VeridianConfig" -- ใส่เผื่อไว้กันเอ๋อ ถ้า CONFIG เป็น nil
 local targetFolder = baseFolder .. "/BgAsset"
 local iconFolder = baseFolder .. "/Icons"
 
--- ครอบ pcall ตอนสร้างโฟลเดอร์ เผื่อ Exec ของมึงมันมีปัญหาเรื่องสิทธิ์การเข้าถึงไฟล์
-local folderSuccess, folderErr = pcall(function()
-    if not isfolder(baseFolder) then makefolder(baseFolder) end
-    if not isfolder(targetFolder) then makefolder(targetFolder) end
-    if not isfolder(iconFolder) then makefolder(iconFolder) end
-end)
+-- สร้างโฟลเดอร์แบบดิบๆ ตามสไตล์มึง
+if not isfolder(baseFolder) then makefolder(baseFolder) end
+if not isfolder(targetFolder) then makefolder(targetFolder) end
+if not isfolder(iconFolder) then makefolder(iconFolder) end
 
-if not folderSuccess then
-    warn("❌ พังตั้งแต่ตอนสร้างโฟลเดอร์ละสัส: " .. tostring(folderErr))
-end
-
--- ตารางเก็บข้อมูลไฟล์ (ปรับ URL และชื่อให้เคลียร์)
+-- ตารางรวมลิงก์ใหม่ทั้งหมด (เปลี่ยนเป็นไอคอนชุดใหม่)
 local assets = {
-    { path = targetFolder .. "/Cool background.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Cool%20background.png", minSize = 5000, name = "Cool background" },
-    { path = targetFolder .. "/furryLogo.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Texture7.jpg", minSize = 5000, name = "Furry Logo" },
-    { path = iconFolder .. "/script.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/script.png", minSize = 0, name = "Icon Script" },
-    { path = iconFolder .. "/server.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/server.png", minSize = 0, name = "Icon Server" },
-    { path = iconFolder .. "/shop.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/shop.png", minSize = 0, name = "Icon Shop" },
-    { path = iconFolder .. "/aim.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/aim.png", minSize = 0, name = "Icon Aim" },
-    { path = iconFolder .. "/pin.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/pin.png", minSize = 0, name = "Icon Pin" },
-    { path = iconFolder .. "/hardware.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/hardware.png", minSize = 0, name = "Icon Hardware" },
-    { path = iconFolder .. "/home.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/home.png", minSize = 0, name = "Icon Home" },
-    { path = iconFolder .. "/setting.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/setting.png", minSize = 0, name = "Icon Setting" },
-    { path = iconFolder .. "/power.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/power.png", minSize = 0, name = "Icon Power" }
+    -- [ หมวดพื้นหลังและโลโก้ ]
+    { path = targetFolder .. "/Cool background.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Cool%20background.png", minSize = 5000 },
+    { path = targetFolder .. "/furryLogo.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Texture7.jpg", minSize = 5000 },
+    
+    -- [ หมวดไอคอนใหม่ ]
+    { path = iconFolder .. "/script.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/script.png", minSize = 0 },
+    { path = iconFolder .. "/server.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/server.png", minSize = 0 },
+    { path = iconFolder .. "/shop.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/shop.png", minSize = 0 },
+    { path = iconFolder .. "/aim.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/aim.png", minSize = 0 },
+    { path = iconFolder .. "/pin.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/pin.png", minSize = 0 },
+    { path = iconFolder .. "/hardware.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/hardware.png", minSize = 0 },
+    { path = iconFolder .. "/home.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/home.png", minSize = 0 },
+    { path = iconFolder .. "/setting.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/setting.png", minSize = 0 },
+    { path = iconFolder .. "/power.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/power.png", minSize = 0 }
 }
 
--- ฟังก์ชันดาวน์โหลด: แก้ไขจุดปิดบล็อก 'end' และเพิ่มระบบตรวจจับการดาวน์โหลดล้มเหลว
-local function downloadFile(asset)
-    -- ดักควาย: ถ้าฟังก์ชันตรวจไฟล์ไม่มีอยู่จริงใน Exec ให้ข้ามไปโหลดเลย
-    if isfile and isfile(asset.path) then 
-        return true 
-    end
-    
-    local maxRetries = 3
-    for i = 1, maxRetries do
-        local success, err = pcall(function()
-            -- ใช้การตรวจสอบความถูกต้องของกูเกิล/กิตฮับเบื้องต้น
-            local content = game:HttpGet(asset.url)
-            
-            -- ดักจับกรณีเน็ตเน่าแล้วดึงได้หน้าเว็บ Error 404 (มันชอบส่ง <!DOCTYPE html กลับมา)
-            if not content or content == "" or string.find(content, "<!DOCTYPE") then
-                error("ดึงข้อมูลสำเร็จแต่เนื้อหาไม่ใช่ไฟล์จริง (อาจเป็นหน้า 404 ของ GitHub หรือเน็ตตัด)")
-            end
-            
-            if #content <= asset.minSize then
-                error("ขนาดไฟล์เล็กเกินไปแต่น่าจะโหลดไม่สมบูรณ์ (Size check failed)")
-            end
-            
-            -- สั่งเขียนไฟล์
-            if writefile then
-                writefile(asset.path, content)
-            else
-                error("Executor ของมึงไม่มีฟังก์ชัน writefile ว้อย!")
-            end
-        end)
-        
-        if success then
-            print(string.format("✅ [สำเร็จ]: โหลดไฟล์ %s เรียบร้อย!", asset.name))
-            return true
-        else
-            warn(string.format("⚠️ [รอบที่ %d] โหลด %s พัง! สาเหตุ: %s", i, asset.name, tostring(err)))
-        end
-        task.wait(0.5) -- บรรเทาอาการเน็ตหน่วง
-    end
-    
-    -- ถ้าลูปครบ 3 รอบแล้วยังพัง กูจะสั่งให้มัน "รันข้ามไปเลย" ไม่ให้โค้ดหยุดทำงาน!
-    warn(string.format("🚨 [ข้ามไฟล์]: โหลด %s ไม่ผ่านหลังจากลองไป 3 รอบ! ปล่อยแม่งไปก่อน...", asset.name))
-    return false
-end
-
--- ลูปสั่งรันดาวน์โหลดทุกไฟล์ในตาราง
-for _, assetData in ipairs(assets) do
-    downloadFile(assetData)
-end
-
--- ครอบ pcall ใหญ่สุดตอนวนลูปดาวน์โหลด กันตายซ้ำซ้อน!
-local loopSuccess, loopErr = pcall(function()
-    for _, asset in ipairs(assets) do
-        local downloaded = downloadFile(asset)
-        if not downloaded then
-            warn("❌ สรุปคือไฟล์นี้โหลดไม่ผ่านชัวร์ๆ ละอ้ายสัส: " .. asset.name)
+-- ลูปดาวน์โหลดโดยใช้ pcall แบบเดียวกับที่มึงเขียนเป๊ะๆ (ไม่มีลูกเล่นให้พัง)
+for _, v in ipairs(assets) do
+    if not isfile(v.path) then
+        local s, content = pcall(game.HttpGet, game, v.url)
+        if s and #content > v.minSize then 
+            writefile(v.path, content) 
         end
     end
-end)
+end
 
-if not loopSuccess then
-    warn("🚨 ลูปดาวน์โหลดแตกยับเยิน! Error รวม: " .. tostring(loopErr))
-else
-    print("✅ ระบบดาวน์โหลดทำงานเสร็จสิ้น (เช็ค Error ด้านบนถ้ามี)")
+print("✅ โหลดไฟล์เสร็จหมดแล้วสัส! โคตรเสถียร!")
+
+
+local function CreateTween(instance, properties, time, style, direction)
+    local info = TweenService:Create(instance, TweenInfo.new(time or 0.2, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.Out), properties)
+    info:Play()
+    return info
 end
 
 function Veridianhub:CreateWindow(Config)
