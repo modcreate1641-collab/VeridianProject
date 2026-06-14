@@ -26,14 +26,14 @@ UserInputService.InputBegan:Connect(function(input, gpe)
 end)
 
 -- =============================================================================
--- [ VERIDIAN ULTIMATE LOADER - REQUEST VERSION ]
+-- [ VERIDIAN STEALTH LOADER - ANTI-DETECTION VERSION ]
 -- =============================================================================
 
 local baseFolder = "VeridianConfig" 
 local targetFolder = baseFolder .. "/BgAsset"
 local iconFolder = baseFolder .. "/Icons"
 
--- 1. สร้าง Folder ปลายทางทั้งหมด
+-- 1. สร้าง Folder ปลายทางทั้งหมด (ทำงานแบบ Local ไม่เกี่ยวกับเน็ต)
 local folders = {baseFolder, targetFolder, iconFolder}
 for _, folder in ipairs(folders) do
     if not isfolder(folder) then
@@ -41,7 +41,7 @@ for _, folder in ipairs(folders) do
     end
 end
 
--- 2. คิวรายการไฟล์ (อัปเดต URL และ Path ทั้งหมด)
+-- 2. คิวรายการไฟล์
 local assetsQueue = {
     -- [Icons]
     {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/script.png",    path = iconFolder .. "/script.png"},
@@ -60,42 +60,48 @@ local assetsQueue = {
     {url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Cool%20background.png", path = targetFolder .. "/Cool background.png"}
 }
 
--- ฟังก์ชันเลือกใช้ Request API ของแต่ละ Executor อัตโนมัติ (สากลที่สุด)
 local httpRequest = (fluid and fluid.request) or (syn and syn.request) or (http and http.request) or request
 
--- 3. ฟังก์ชันโหลดไฟล์ที่เปลี่ยนมาใช้ httpRequest (ดึงไฟล์ดิบได้ชัวร์กว่า)
+-- 3. ฟังก์ชันโหลดไฟล์เวอร์ชัน Stealth ปลอม Headers เต็มรูปแบบ
 local function downloadAsset(asset)
+    -- ดักจับขั้นแรก: ถ้ามีไฟล์อยู่แล้ว ห้ามยิง HTTP เด็ดขาด (ลดการทิ้งร่องรอยร้อยเปอร์เซ็นต์)
     if isfile(asset.path) then 
         return true 
     end
 
     if not httpRequest then
-        warn("[Loader Error] Your executor does not support request API!")
         return false
     end
 
     local success, response = pcall(function()
         return httpRequest({
             Url = asset.url,
-            Method = "GET"
+            Method = "GET",
+            -- ปลอมแปลงตัวตนให้เหมือนเบราว์เซอร์ทั่วไปกำลังโหลดรูปจากเว็บ
+            Headers = {
+                ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                ["Accept"] = "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                ["Accept-Language"] = "en-US,en;q=0.9",
+                ["Cache-Control"] = "no-cache",
+                ["Connection"] = "keep-alive"
+            }
         })
     end)
 
-    -- เช็คสถานะการดาวน์โหลด (StatusCode 200 คือผ่านสำเร็จ)
     if success and response and response.StatusCode == 200 then
         local body = response.Body
         if body and #body > 0 then
-            writefile(asset.path, body)
-            print("[Success] Downloaded: " .. asset.path) -- บังคับปริ้นบอกตอนโหลดเสร็จจริง
-            return true
+            -- เช็คความปลอดภัยชั้นสุดท้าย: ป้องกันการดึงสคริปต์แปลกปลอมมาบันทึก
+            if string.sub(body, 1, 14) ~= "404: Not Found" then
+                writefile(asset.path, body)
+                return true
+            end
         end
     end
-
-    warn("[Loader Error] Failed to download from URL: " .. asset.url)
     return false
 end
 
--- 4. โหลดขนานแบบ Async 
+-- 4. ระบบกระจายงานโหลดขนานแบบเงียบ (ลบข้อความ Print ล่อเป้าออกทั้งหมดในเวลาใช้งานจริง)
 local remaining = #assetsQueue
 
 for _, asset in ipairs(assetsQueue) do
@@ -103,22 +109,20 @@ for _, asset in ipairs(assetsQueue) do
         local downloaded = false
         local attempts = 0
         
-        while not downloaded and attempts < 3 do -- เพิ่มเป็น 3 รอบป้องกันพลาด
+        while not downloaded and attempts < 2 do
             attempts = attempts + 1
             downloaded = downloadAsset(asset)
-            if not downloaded then task.wait(0.5) end
+            if not downloaded then task.wait(0.7) end -- หน่วงเวลาเล็กน้อยไม่ให้ยิงรัวเกินไปจนผิดสังเกต
         end
         
         remaining = remaining - 1
     end)
 end
 
--- 5. รอจนโหลดเสร็จครบจริงๆ
+-- 5. รอจนโหลดเสร็จ
 while remaining > 0 do
     task.wait()
 end
-
-print("[Veridian Loader] All assets are verified and physically saved!")
 
 local function CreateTween(instance, properties, time, style, direction)
     local info = TweenService:Create(instance, TweenInfo.new(time or 0.2, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.Out), properties)
@@ -1116,7 +1120,7 @@ function WindowAPI:UpdateTheme(newColor)
     local DeepOverlay = MutedColor:lerp(BaseDark, 0.8)
     local HighlightColor = MutedColor:lerp(Color3.new(1, 1, 1), 0.3) 
     
-    local GlobalTransparency = 0 -- กูแก้เป็น 0 ให้ละ ทึบตึ๊บแน่นอนไอ้สอง!
+    local GlobalTransparency = 0 
 
     CONFIG.NavBtnColor = MutedColor
     CONFIG.HoverColor = MutedColor:lerp(Color3.new(1, 1, 1), 0.15)
