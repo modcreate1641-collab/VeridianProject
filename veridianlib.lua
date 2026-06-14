@@ -25,11 +25,15 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-local baseFolder = "CONFIG.BgFolder" 
+-- =============================================================================
+-- [ VERIDIAN ULTIMATE LOADER - REQUEST VERSION ]
+-- =============================================================================
+
+local baseFolder = "VeridianConfig" 
 local targetFolder = baseFolder .. "/BgAsset"
 local iconFolder = baseFolder .. "/Icons"
 
-
+-- 1. สร้าง Folder ปลายทางทั้งหมด
 local folders = {baseFolder, targetFolder, iconFolder}
 for _, folder in ipairs(folders) do
     if not isfolder(folder) then
@@ -37,6 +41,7 @@ for _, folder in ipairs(folders) do
     end
 end
 
+-- 2. คิวรายการไฟล์ (อัปเดต URL และ Path ทั้งหมด)
 local assetsQueue = {
     -- [Icons]
     {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/script.png",    path = iconFolder .. "/script.png"},
@@ -48,36 +53,49 @@ local assetsQueue = {
     {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/home.png",      path = iconFolder .. "/home.png"},
     {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/setting.png",   path = iconFolder .. "/setting.png"},
     {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/power.png",     path = iconFolder .. "/power.png"},
-    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/f9aa08053b401332a0a4f95485cf4ac5ed3bc3cf9acd7004d89a73884c8f8fd2.0.png",     path = iconFolder .. "/furry icon.png"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/f9aa08053b401332a0a4f95485cf4ac5ed3bc3cf9acd7004d89a73884c8f8fd2.0.png", path = iconFolder .. "/furry icon.png"},
     
+    -- [Backgrounds]
     {url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Texture7.jpg",       path = targetFolder .. "/Texture7.jpg"},
     {url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Cool%20background.png", path = targetFolder .. "/Cool background.png"}
 }
 
+-- ฟังก์ชันเลือกใช้ Request API ของแต่ละ Executor อัตโนมัติ (สากลที่สุด)
+local httpRequest = (fluid and fluid.request) or (syn and syn.request) or (http and http.request) or request
+
+-- 3. ฟังก์ชันโหลดไฟล์ที่เปลี่ยนมาใช้ httpRequest (ดึงไฟล์ดิบได้ชัวร์กว่า)
 local function downloadAsset(asset)
     if isfile(asset.path) then 
         return true 
     end
 
-    local success, result = pcall(function()
-        return game:HttpGet(asset.url)
-    end)
-
-    if success and result and #result > 0 then
-        if string.sub(result, 1, 14) == "404: Not Found" then
-            warn("[Loader Error] File not found on GitHub: " .. asset.url)
-            return false
-        end
-        
-        writefile(asset.path, result)
-        return true
-    else
-        warn("[Loader Error] Failed to download: " .. asset.url)
+    if not httpRequest then
+        warn("[Loader Error] Your executor does not support request API!")
         return false
     end
+
+    local success, response = pcall(function()
+        return httpRequest({
+            Url = asset.url,
+            Method = "GET"
+        })
+    end)
+
+    -- เช็คสถานะการดาวน์โหลด (StatusCode 200 คือผ่านสำเร็จ)
+    if success and response and response.StatusCode == 200 then
+        local body = response.Body
+        if body and #body > 0 then
+            writefile(asset.path, body)
+            print("[Success] Downloaded: " .. asset.path) -- บังคับปริ้นบอกตอนโหลดเสร็จจริง
+            return true
+        end
+    end
+
+    warn("[Loader Error] Failed to download from URL: " .. asset.url)
+    return false
 end
 
--- 4. ระบบ Multi-Threading โหลดขนานพร้อมกันทุกไฟล์ (จุดตายที่เหนือกว่าลูปธรรมดา)
+-- 4. โหลดขนานแบบ Async 
 local remaining = #assetsQueue
 
 for _, asset in ipairs(assetsQueue) do
@@ -85,8 +103,7 @@ for _, asset in ipairs(assetsQueue) do
         local downloaded = false
         local attempts = 0
         
-        -- แถมระบบ Retry ให้ 2 รอบ เผื่อจังหวะเน็ตกระตุกพอดี
-        while not downloaded and attempts < 2 do
+        while not downloaded and attempts < 3 do -- เพิ่มเป็น 3 รอบป้องกันพลาด
             attempts = attempts + 1
             downloaded = downloadAsset(asset)
             if not downloaded then task.wait(0.5) end
@@ -96,12 +113,12 @@ for _, asset in ipairs(assetsQueue) do
     end)
 end
 
--- 5. รอจนกว่าทุกไฟล์จะจัดการเสร็จ (แต่ UI หรือสคริปต์หลักส่วนอื่นยังทำงานต่อได้)
+-- 5. รอจนโหลดเสร็จครบจริงๆ
 while remaining > 0 do
     task.wait()
 end
 
-print("[Veridian Loader] All assets are verified and ready to use!")
+print("[Veridian Loader] All assets are verified and physically saved!")
 
 local function CreateTween(instance, properties, time, style, direction)
     local info = TweenService:Create(instance, TweenInfo.new(time or 0.2, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.Out), properties)
