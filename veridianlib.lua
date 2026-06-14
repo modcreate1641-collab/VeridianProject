@@ -11,7 +11,7 @@ local CONFIG = {
     MainBgColor = Color3.fromRGB(45, 45, 50),
     NavPanelColor = Color3.fromRGB(45, 45, 50),
     SearchBgColor = Color3.fromRGB(76, 181, 191),
-    DefaultFontSize = 12,
+   local DefaultFontSize = 12,
     KeybindEnabled = true,
     ToggleKey = Enum.KeyCode.K,
     BgFolder = "VeridianConfig"
@@ -25,85 +25,83 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-local baseFolder = CONFIG.BgFolder
+local baseFolder = "CONFIG.BgFolder" 
 local targetFolder = baseFolder .. "/BgAsset"
 local iconFolder = baseFolder .. "/Icons"
 
-if not isfolder(baseFolder) then makefolder(baseFolder) end
-if not isfolder(targetFolder) then makefolder(targetFolder) end
-if not isfolder(iconFolder) then makefolder(iconFolder) end
 
-local bgName = targetFolder .. "/Cool background.png"
-local bgUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Cool%20background.png"
-
-local logoName = targetFolder .. "/furryLogo.png"
-local logoUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Texture7.jpg"
-
-local settingName = iconFolder .. "/setting icon.png"
-local settingUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/setting.png"
-
-local scripthubName = iconFolder .. "/hardware.png"
-local scripthubUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/hardware.png
-
-local scriptName = iconFolder .. "/script icon.png"
-local scriptUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Fluffy/refs/heads/main/script%20icon.png"
-
-local furryName = iconFolder .. "/furry icon.png"
-local furryUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Fluffy/refs/heads/main/furry%20icon.png"
-
-local aimName = iconFolder .. "/aim.png"
-local aimUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/aim.png"
-
-local destroyName = iconFolder .. "/destroy icon.png"
-local destroyUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/power.png"
-
-local autoName = iconFolder .. "/home.png"
-local autoUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/home.png"
-
-if not isfile(bgName) then
-    local s, content = pcall(game.HttpGet, game, bgUrl)
-    if s and #content > 5000 then writefile(bgName, content) end
+local folders = {baseFolder, targetFolder, iconFolder}
+for _, folder in ipairs(folders) do
+    if not isfolder(folder) then
+        makefolder(folder)
+    end
 end
 
-if not isfile(logoName) then
-    local s, content = pcall(game.HttpGet, game, logoUrl)
-    if s and #content > 5000 then writefile(logoName, content) end
+local assetsQueue = {
+    -- [Icons]
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/script.png",    path = iconFolder .. "/script.png"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/server.png",    path = iconFolder .. "/server.png"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/shop.png",      path = iconFolder .. "/shop.png"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/aim.png",       path = iconFolder .. "/aim.png"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/pin.png",       path = iconFolder .. "/pin.png"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/hardware.png",  path = iconFolder .. "/hardware.png"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/home.png",      path = iconFolder .. "/home.png"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/setting.png",   path = iconFolder .. "/setting.png"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/power.png",     path = iconFolder .. "/power.png"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/f9aa08053b401332a0a4f95485cf4ac5ed3bc3cf9acd7004d89a73884c8f8fd2.0.png",     path = iconFolder .. "/furry icon.png"},
+    
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Texture7.jpg",       path = targetFolder .. "/Texture7.jpg"},
+    {url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Cool%20background.png", path = targetFolder .. "/Cool background.png"}
+}
+
+local function downloadAsset(asset)
+    if isfile(asset.path) then 
+        return true 
+    end
+
+    local success, result = pcall(function()
+        return game:HttpGet(asset.url)
+    end)
+
+    if success and result and #result > 0 then
+        if string.sub(result, 1, 14) == "404: Not Found" then
+            warn("[Loader Error] File not found on GitHub: " .. asset.url)
+            return false
+        end
+        
+        writefile(asset.path, result)
+        return true
+    else
+        warn("[Loader Error] Failed to download: " .. asset.url)
+        return false
+    end
 end
 
-if not isfile(settingName) then
-    local s, content = pcall(game.HttpGet, game, settingUrl)
-    if s and #content > 0 then writefile(settingName, content) end
+-- 4. ระบบ Multi-Threading โหลดขนานพร้อมกันทุกไฟล์ (จุดตายที่เหนือกว่าลูปธรรมดา)
+local remaining = #assetsQueue
+
+for _, asset in ipairs(assetsQueue) do
+    task.spawn(function()
+        local downloaded = false
+        local attempts = 0
+        
+        -- แถมระบบ Retry ให้ 2 รอบ เผื่อจังหวะเน็ตกระตุกพอดี
+        while not downloaded and attempts < 2 do
+            attempts = attempts + 1
+            downloaded = downloadAsset(asset)
+            if not downloaded then task.wait(0.5) end
+        end
+        
+        remaining = remaining - 1
+    end)
 end
 
-if not isfile(hardwareName) then
-    local s, content = pcall(game.HttpGet, game, scripthubUrl)
-    if s and #content > 0 then writefile(scripthubName, content) end
+-- 5. รอจนกว่าทุกไฟล์จะจัดการเสร็จ (แต่ UI หรือสคริปต์หลักส่วนอื่นยังทำงานต่อได้)
+while remaining > 0 do
+    task.wait()
 end
 
-if not isfile(scriptName) then
-    local s, content = pcall(game.HttpGet, game, scriptUrl)
-    if s and #content > 0 then writefile(scriptName, content) end
-end
-
-if not isfile(furryName) then
-    local s, content = pcall(game.HttpGet, game, furryUrl)
-    if s and #content > 0 then writefile(furryName, content) end
-end
-
-if not isfile(aimName) then
-    local s, content = pcall(game.HttpGet, game, aimUrl)
-    if s and #content > 0 then writefile(aimName, content) end
-end
-
-if not isfile(destroyName) then
-    local s, content = pcall(game.HttpGet, game, destroyUrl)
-    if s and #content > 0 then writefile(destroyName, content) end
-end
-
-if not isfile(homeName) then
-    local s, content = pcall(game.HttpGet, game, autoUrl)
-    if s and #content > 0 then writefile(autoName, content) end
-end
+print("[Veridian Loader] All assets are verified and ready to use!")
 
 local function CreateTween(instance, properties, time, style, direction)
     local info = TweenService:Create(instance, TweenInfo.new(time or 0.2, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.Out), properties)
@@ -673,7 +671,7 @@ BtnIcon.Name = "DestroyIcon"
 BtnIcon.Size = UDim2.new(0, 20, 0, 20)
 BtnIcon.Position = UDim2.new(0.5, -10, 0.5, -10)
 BtnIcon.BackgroundTransparency = 1
-BtnIcon.Image = getcustomasset(CONFIG.BgFolder .. "/Icons/destroy icon.png")
+BtnIcon.Image = getcustomasset(CONFIG.BgFolder .. "/Icons/power.png")
 BtnIcon.ZIndex = 13
 
 -- [[ POPUP UI SETUP (MODERN BLUE THEME) ]]
@@ -847,7 +845,7 @@ SettingIcon.Name = "SettingIcon"
 SettingIcon.Size = UDim2.new(0, 24, 0, 24) 
 SettingIcon.Position = UDim2.new(0.5, -12, 0.5, -12) 
 SettingIcon.BackgroundTransparency = 1
-SettingIcon.Image = getcustomasset(CONFIG.BgFolder .. "/Icons/setting icon.png") 
+SettingIcon.Image = getcustomasset(CONFIG.BgFolder .. "/Icons/setting.png") 
 SettingIcon.ZIndex = 13
 
 TopSettingBtn.MouseEnter:Connect(function() 
@@ -1182,7 +1180,7 @@ function WindowAPI:UpdateTheme(newColor)
     end
 end
 
-function WindowAPI:CreateTab(name, target, isAuto)
+function WindowAPI:CreateTab(name, iconName, target, isAuto)
     local TabPage = Instance.new("ScrollingFrame", PageArea)
     TabPage.Size = UDim2.new(1, 0, 1, 0)
     TabPage.Position = UDim2.new(0, 20, 0, 0)
@@ -1203,28 +1201,67 @@ function WindowAPI:CreateTab(name, target, isAuto)
     local b = Instance.new("TextButton", NavArea)
     b.Size = UDim2.new(0, 105, 0, 36)
     b.BackgroundColor3 = CONFIG.NavBtnColor or Color3.fromRGB(35, 35, 40)
-    b.BackgroundTransparency = 0 -- ทึบ 100%
+    b.BackgroundTransparency = 0 
     b.Text = name
     b.TextColor3 = Color3.new(0.9, 0.9, 0.9)
     b.Font = Enum.Font.GothamBold
     b.TextSize = CONFIG.DefaultFontSize or 14
+    b.AutoButtonColor = false
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 12)
     b.ZIndex = 12
     
-    local bStroke = Instance.new("UIStroke", b)
-    bStroke.Color = Color3.fromRGB(0, 255, 255)
-    bStroke.Transparency = 0.5
-    bStroke.Thickness = 1.2
+    -- ระบบใส่ไอคอนด้วยชื่อไฟล์ (เช็คว่าถ้ามึงใส่ชื่อไอคอนมา ค่อยสร้างให้อัตโนมัติ)
+    if iconName and iconName ~= "" then
+        local btnIcon = Instance.new("ImageLabel", b)
+        btnIcon.Size = UDim2.new(0, 18, 0, 18)
+        btnIcon.Position = UDim2.new(0, 10, 0.5, 0)
+        btnIcon.AnchorPoint = Vector2.new(0, 0.5)
+        btnIcon.BackgroundTransparency = 1
+        -- ดึงภาพจากโฟลเดอร์ Icons ตามชื่อที่มึงส่งมาตรงๆ ไม่ต้องใช้ ID โง่ๆ อีกต่อไป
+        btnIcon.Image = getcustomasset(iconFolder .. "/" .. iconName)
+        btnIcon.ZIndex = 13
+        
+        -- ขยับตัวหนังสือไปทางขวาหน่อย เพื่อหลบให้ไอคอน
+        b.TextXAlignment = Enum.TextXAlignment.Left
+        b.TextPosition = UDim2.new(0, 34, 0, 0) -- หรือถ้าเวิร์กสเปซมึงใช้ Padding ก็ปรับตามสะดวก
+    end
     
-    -- แก้ Hover ให้เรืองแสงที่ขอบแทน ไม่ยุ่งกับความโปร่งใสแล้ว
+    local tabIndicator = Instance.new("Frame", b)
+    tabIndicator.Size = UDim2.new(0, 0, 0, 3)
+    tabIndicator.Position = UDim2.new(0.5, 0, 1, -4) 
+    tabIndicator.AnchorPoint = Vector2.new(0.5, 1)
+    tabIndicator.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+    tabIndicator.BorderSizePixel = 0
+    Instance.new("UICorner", tabIndicator).CornerRadius = UDim.new(0, 4)
+    
+    local bStroke = Instance.new("UIStroke", b)
+    bStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    bStroke.Color = Color3.fromRGB(0, 255, 255)
+    bStroke.Transparency = 1
+    bStroke.Thickness = 2
+    
     b.MouseEnter:Connect(function() 
         CreateTween(b, {TextColor3 = Color3.new(1, 1, 1)}) 
-        CreateTween(bStroke, {Color = Color3.new(1, 1, 1), Transparency = 0})
+        CreateTween(bStroke, {Transparency = 0}) 
     end)
+    
     b.MouseLeave:Connect(function() 
         CreateTween(b, {TextColor3 = Color3.new(0.9, 0.9, 0.9)}) 
-        CreateTween(bStroke, {Color = Color3.fromRGB(0, 255, 255), Transparency = 0.5})
+        if WindowAPI.CurrentTab ~= name then 
+            CreateTween(bStroke, {Transparency = 1})
+        end
     end)
+    
+    b.MouseButton1Click:Connect(function()
+        if WindowAPI.CurrentTab == name then return end
+        WindowAPI.CurrentTab = name
+        
+        CreateTween(bStroke, {Transparency = 0})
+        CreateTween(tabIndicator, {Size = UDim2.new(0, 60, 0, 3)}) 
+    end)
+    
+    return TabPage
+end
 
     local TabAPI = {}
     
