@@ -11,7 +11,7 @@ local CONFIG = {
     MainBgColor = Color3.fromRGB(45, 45, 50),
     NavPanelColor = Color3.fromRGB(45, 45, 50),
     SearchBgColor = Color3.fromRGB(76, 181, 191),
-   local DefaultFontSize = 12,
+    DefaultFontSize = 12,
     KeybindEnabled = true,
     ToggleKey = Enum.KeyCode.K,
     BgFolder = "VeridianConfig"
@@ -1180,7 +1180,7 @@ function WindowAPI:UpdateTheme(newColor)
     end
 end
 
-function WindowAPI:CreateTab(name, iconName, target, isAuto)
+function WindowAPI:CreateTab(name, target, isAuto)
     local TabPage = Instance.new("ScrollingFrame", PageArea)
     TabPage.Size = UDim2.new(1, 0, 1, 0)
     TabPage.Position = UDim2.new(0, 20, 0, 0)
@@ -1201,67 +1201,28 @@ function WindowAPI:CreateTab(name, iconName, target, isAuto)
     local b = Instance.new("TextButton", NavArea)
     b.Size = UDim2.new(0, 105, 0, 36)
     b.BackgroundColor3 = CONFIG.NavBtnColor or Color3.fromRGB(35, 35, 40)
-    b.BackgroundTransparency = 0 
+    b.BackgroundTransparency = 0 -- ทึบ 100%
     b.Text = name
     b.TextColor3 = Color3.new(0.9, 0.9, 0.9)
     b.Font = Enum.Font.GothamBold
     b.TextSize = CONFIG.DefaultFontSize or 14
-    b.AutoButtonColor = false
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 12)
     b.ZIndex = 12
     
-    -- ระบบใส่ไอคอนด้วยชื่อไฟล์ (เช็คว่าถ้ามึงใส่ชื่อไอคอนมา ค่อยสร้างให้อัตโนมัติ)
-    if iconName and iconName ~= "" then
-        local btnIcon = Instance.new("ImageLabel", b)
-        btnIcon.Size = UDim2.new(0, 18, 0, 18)
-        btnIcon.Position = UDim2.new(0, 10, 0.5, 0)
-        btnIcon.AnchorPoint = Vector2.new(0, 0.5)
-        btnIcon.BackgroundTransparency = 1
-        -- ดึงภาพจากโฟลเดอร์ Icons ตามชื่อที่มึงส่งมาตรงๆ ไม่ต้องใช้ ID โง่ๆ อีกต่อไป
-        btnIcon.Image = getcustomasset(iconFolder .. "/" .. iconName)
-        btnIcon.ZIndex = 13
-        
-        -- ขยับตัวหนังสือไปทางขวาหน่อย เพื่อหลบให้ไอคอน
-        b.TextXAlignment = Enum.TextXAlignment.Left
-        b.TextPosition = UDim2.new(0, 34, 0, 0) -- หรือถ้าเวิร์กสเปซมึงใช้ Padding ก็ปรับตามสะดวก
-    end
-    
-    local tabIndicator = Instance.new("Frame", b)
-    tabIndicator.Size = UDim2.new(0, 0, 0, 3)
-    tabIndicator.Position = UDim2.new(0.5, 0, 1, -4) 
-    tabIndicator.AnchorPoint = Vector2.new(0.5, 1)
-    tabIndicator.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-    tabIndicator.BorderSizePixel = 0
-    Instance.new("UICorner", tabIndicator).CornerRadius = UDim.new(0, 4)
-    
     local bStroke = Instance.new("UIStroke", b)
-    bStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     bStroke.Color = Color3.fromRGB(0, 255, 255)
-    bStroke.Transparency = 1
-    bStroke.Thickness = 2
+    bStroke.Transparency = 0.5
+    bStroke.Thickness = 1.2
     
+    -- แก้ Hover ให้เรืองแสงที่ขอบแทน ไม่ยุ่งกับความโปร่งใสแล้ว
     b.MouseEnter:Connect(function() 
         CreateTween(b, {TextColor3 = Color3.new(1, 1, 1)}) 
-        CreateTween(bStroke, {Transparency = 0}) 
+        CreateTween(bStroke, {Color = Color3.new(1, 1, 1), Transparency = 0})
     end)
-    
     b.MouseLeave:Connect(function() 
         CreateTween(b, {TextColor3 = Color3.new(0.9, 0.9, 0.9)}) 
-        if WindowAPI.CurrentTab ~= name then 
-            CreateTween(bStroke, {Transparency = 1})
-        end
+        CreateTween(bStroke, {Color = Color3.fromRGB(0, 255, 255), Transparency = 0.5})
     end)
-    
-    b.MouseButton1Click:Connect(function()
-        if WindowAPI.CurrentTab == name then return end
-        WindowAPI.CurrentTab = name
-        
-        CreateTween(bStroke, {Transparency = 0})
-        CreateTween(tabIndicator, {Size = UDim2.new(0, 60, 0, 3)}) 
-    end)
-    
-    return TabPage
-end
 
     local TabAPI = {}
     
