@@ -25,7 +25,7 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-local baseFolder = CONFIG.BgFolder
+local baseFolder = CONFIG and CONFIG.BgFolder or "VeridianConfig" -- ดักควายเผื่อ CONFIG เป็น nil
 local targetFolder = baseFolder .. "/BgAsset"
 local iconFolder = baseFolder .. "/Icons"
 
@@ -40,13 +40,10 @@ if not folderSuccess then
     warn("❌ พังตั้งแต่ตอนสร้างโฟลเดอร์ละสัส: " .. tostring(folderErr))
 end
 
--- ตารางเก็บข้อมูลไฟล์
+-- ตารางเก็บข้อมูลไฟล์ (ปรับ URL และชื่อให้เคลียร์)
 local assets = {
-    -- [ BgAsset ]
     { path = targetFolder .. "/Cool background.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Cool%20background.png", minSize = 5000, name = "Cool background" },
     { path = targetFolder .. "/furryLogo.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Texture7.jpg", minSize = 5000, name = "Furry Logo" },
-    
-    -- [ New Icons Setup ]
     { path = iconFolder .. "/script.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/script.png", minSize = 0, name = "Icon Script" },
     { path = iconFolder .. "/server.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/server.png", minSize = 0, name = "Icon Server" },
     { path = iconFolder .. "/shop.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/shop.png", minSize = 0, name = "Icon Shop" },
@@ -58,31 +55,53 @@ local assets = {
     { path = iconFolder .. "/power.png", url = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/power.png", minSize = 0, name = "Icon Power" }
 }
 
--- ฟังก์ชันดาวน์โหลดที่มี pcall ซ้อนข้างในอีกทีเพื่อเช็ค HttpGet และ writefile
+-- ฟังก์ชันดาวน์โหลด: แก้ไขจุดปิดบล็อก 'end' และเพิ่มระบบตรวจจับการดาวน์โหลดล้มเหลว
 local function downloadFile(asset)
-    if isfile(asset.path) then return true end
+    -- ดักควาย: ถ้าฟังก์ชันตรวจไฟล์ไม่มีอยู่จริงใน Exec ให้ข้ามไปโหลดเลย
+    if isfile and isfile(asset.path) then 
+        return true 
+    end
     
     local maxRetries = 3
     for i = 1, maxRetries do
-        -- ครอบ pcall แม่่งตรงนี้เลย จะได้รู้ว่า HttpGet ผ่านไหม หรือ writefile พัง
         local success, err = pcall(function()
+            -- ใช้การตรวจสอบความถูกต้องของกูเกิล/กิตฮับเบื้องต้น
             local content = game:HttpGet(asset.url)
-            if content and #content > asset.minSize then
+            
+            -- ดักจับกรณีเน็ตเน่าแล้วดึงได้หน้าเว็บ Error 404 (มันชอบส่ง <!DOCTYPE html กลับมา)
+            if not content or content == "" or string.find(content, "<!DOCTYPE") then
+                error("ดึงข้อมูลสำเร็จแต่เนื้อหาไม่ใช่ไฟล์จริง (อาจเป็นหน้า 404 ของ GitHub หรือเน็ตตัด)")
+            end
+            
+            if #content <= asset.minSize then
+                error("ขนาดไฟล์เล็กเกินไปแต่น่าจะโหลดไม่สมบูรณ์ (Size check failed)")
+            end
+            
+            -- สั่งเขียนไฟล์
+            if writefile then
                 writefile(asset.path, content)
             else
-                error("ขนาดไฟล์เล็กเกินไปหรือดึงข้อมูลมาว่างเปล่า (Size check failed)")
+                error("Executor ของมึงไม่มีฟังก์ชัน writefile ว้อย!")
             end
         end)
         
         if success then
+            print(string.format("✅ [สำเร็จ]: โหลดไฟล์ %s เรียบร้อย!", asset.name))
             return true
         else
             warn(string.format("⚠️ [รอบที่ %d] โหลด %s พัง! สาเหตุ: %s", i, asset.name, tostring(err)))
         end
-        task.wait(1) -- รอแป๊บนึงก่อนลองใหม่ เผื่อเน็ตกระตุก
+        task.wait(0.5) -- บรรเทาอาการเน็ตหน่วง
     end
     
+    -- ถ้าลูปครบ 3 รอบแล้วยังพัง กูจะสั่งให้มัน "รันข้ามไปเลย" ไม่ให้โค้ดหยุดทำงาน!
+    warn(string.format("🚨 [ข้ามไฟล์]: โหลด %s ไม่ผ่านหลังจากลองไป 3 รอบ! ปล่อยแม่งไปก่อน...", asset.name))
     return false
+end
+
+-- ลูปสั่งรันดาวน์โหลดทุกไฟล์ในตาราง
+for _, assetData in ipairs(assets) do
+    downloadFile(assetData)
 end
 
 -- ครอบ pcall ใหญ่สุดตอนวนลูปดาวน์โหลด กันตายซ้ำซ้อน!
