@@ -11,7 +11,7 @@ local CONFIG = {
     MainBgColor = Color3.fromRGB(45, 45, 50),
     NavPanelColor = Color3.fromRGB(45, 45, 50),
     SearchBgColor = Color3.fromRGB(76, 181, 191),
-    DefaultFontSize = 12,
+   local DefaultFontSize = 12,
     KeybindEnabled = true,
     ToggleKey = Enum.KeyCode.K,
     BgFolder = "VeridianConfig"
@@ -25,7 +25,7 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-local baseFolder = CONFIG.BgFolder
+ local baseFolder = CONFIG.BgFolder
 local targetFolder = baseFolder .. "/BgAsset"
 local iconFolder = baseFolder .. "/Icons"
 
@@ -40,7 +40,7 @@ local bgUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/r
 local logoName = targetFolder .. "/furryLogo.png"
 local logoUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/Texture7.jpg"
 
--- [ หมวดไอคอนใหม่ ] --
+-- [ หมวดไอคอนใหม่จากคลัง Icon ล่าสุดที่มึงส่งมา ] --
 local scriptName = iconFolder .. "/script.png"
 local scriptUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/script.png"
 
@@ -68,7 +68,7 @@ local settingUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/
 local powerName = iconFolder .. "/power.png"
 local powerUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Icon/refs/heads/main/power.png"
 
--- [ เริ่มคำสั่งดาวน์โหลดแบบถึกทน ] --
+-- [ บล็อกสั่งรันดาวน์โหลดทีละตัวแบบตรงไปตรงมา ] --
 
 if not isfile(bgName) then
     local s, content = pcall(game.HttpGet, game, bgUrl)
