@@ -1207,18 +1207,34 @@ end
 
 function WindowAPI:CreateTab(name, target, isAuto)
     local TabPage = Instance.new("ScrollingFrame", PageArea)
+    TabPage.Name = name .. "Page"
     TabPage.Size = UDim2.new(1, 0, 1, 0)
     TabPage.Position = UDim2.new(0, 20, 0, 0)
     TabPage.BackgroundTransparency = 1
     TabPage.BorderSizePixel = 0
     TabPage.CanvasBackgroundTransparency = 1
-    TabPage.ScrollBarThickness = 3
-    TabPage.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
-    TabPage.ScrollBarImageTransparency = 0.3
     TabPage.Visible = false
-    TabPage.AutomaticCanvasSize = "Y"
+    TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
     TabPage.ZIndex = 11
     
+    -- [ CUSTOM SCROLLBAR DESIGN - WHITE & CYAN NEON ]
+    TabPage.ScrollBarThickness = 4 -- เพิ่มความหนานิดหน่อยให้เห็นขอบนีออนชัดเจนขึ้น
+    TabPage.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255) -- ตัวบาร์สีขาวล้วน
+    TabPage.ScrollBarImageTransparency = 0.15 -- ปรับให้ชัดเจนขึ้น
+    
+    -- เคลียร์ปัญหากล่องหลังสีเทาเข้ม (ซ่อนแผงหลังของระบบดั้งเดิม 100%)
+    TabPage.VerticalScrollBarInset = Enum.ScrollBarInset.None
+    TabPage.HorizontalScrollBarInset = Enum.ScrollBarInset.None
+    TabPage.VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right
+    
+    -- ตกแต่งเงาเรืองแสง/เส้นขอบนีออนสีฟ้าให้แมตช์กับธีมปุ่มด้วย UIStroke
+    -- หมายเหตุ: UIStroke บน ScrollingFrame จะควบคุมเส้นขอบของ ScrollBar ด้วยใน Roblox ยุคนี้
+    local ScrollStroke = Instance.new("UIStroke", TabPage)
+    ScrollStroke.Color = Color3.fromRGB(0, 255, 255) -- สีฟ้านีออน
+    ScrollStroke.Thickness = 1
+    ScrollStroke.Transparency = 0.4 -- นีออนจางๆ สวยงาม ไม่กวนสายตา
+    ScrollStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
     local ListLayout = Instance.new("UIListLayout", TabPage)
     ListLayout.Padding = UDim.new(0, 12) 
     ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -1226,6 +1242,7 @@ function WindowAPI:CreateTab(name, target, isAuto)
     local padding = Instance.new("UIPadding", TabPage)
     padding.PaddingTop = UDim.new(0, 8)
     padding.PaddingLeft = UDim.new(0, 8)
+    padding.PaddingRight = UDim.new(0, 8) -- เผื่อพื้นที่ฝั่งขวาไม่ให้ Elements เบียดชนสไลด์บาร์
 
     local b = Instance.new("TextButton", NavArea)
     b.Size = UDim2.new(0, 105, 0, 36)
@@ -1270,6 +1287,7 @@ function WindowAPI:CreateTab(name, target, isAuto)
     
     return self
 end
+
 
 -- [[ 3. OOP METHODS FOR TAB OBJECT ]]
 
