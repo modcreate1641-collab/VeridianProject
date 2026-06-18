@@ -1210,8 +1210,12 @@ function WindowAPI:CreateTab(name, target, isAuto)
     TabPage.Size = UDim2.new(1, 0, 1, 0)
     TabPage.Position = UDim2.new(0, 20, 0, 0)
     TabPage.BackgroundTransparency = 1
+    TabPage.BorderSizePixel = 0
+    TabPage.CanvasBackgroundTransparency = 1
+    TabPage.ScrollBarThickness = 3
+    TabPage.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+    TabPage.ScrollBarImageTransparency = 0.3
     TabPage.Visible = false
-    TabPage.ScrollBarThickness = 2 
     TabPage.AutomaticCanvasSize = "Y"
     TabPage.ZIndex = 11
     
@@ -1248,17 +1252,17 @@ function WindowAPI:CreateTab(name, target, isAuto)
         CreateTween(bStroke, {Color = Color3.fromRGB(0, 255, 255), Transparency = 0.5})
     end)
 
-    
     b.MouseButton1Click:Connect(function()
         for _, v in pairs(PageArea:GetChildren()) do
             if v:IsA("ScrollingFrame") or v:IsA("Frame") then
                 v.Visible = false
             end
         end
+        TabPage.BackgroundTransparency = 1
+        TabPage.CanvasBackgroundTransparency = 1
         TabPage.Visible = true
     end)
 
-    
     local self = setmetatable({}, TabClass)
     self.TabPage = TabPage
     self.NavButton = b
