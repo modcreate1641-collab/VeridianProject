@@ -1216,24 +1216,112 @@ function WindowAPI:CreateTab(name, target, isAuto)
     TabPage.Visible = false
     TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
     TabPage.ZIndex = 11
+    TabPage.ScrollBarThickness = 0
+
+    local CustomScrollTrack = Instance.new("Frame", PageArea)
+    CustomScrollTrack.Name = name .. "ScrollTrack"
+    CustomScrollTrack.Size = UDim2.new(0, 4, 1, -16)
+    CustomScrollTrack.Position = UDim2.new(1, -8, 0, 8)
+    CustomScrollTrack.BackgroundTransparency = 1
+    CustomScrollTrack.Visible = false
+    CustomScrollTrack.ZIndex = 12
+
+    local CustomThumb = Instance.new("Frame", CustomScrollTrack)
+    CustomThumb.Name = "Thumb"
+    CustomThumb.Size = UDim2.new(1, 0, 0, 30)
+    CustomThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    CustomThumb.BackgroundTransparency = 0
+    CustomThumb.BorderSizePixel = 0
+    CustomThumb.ZIndex = 13
+
+    local ThumbCorner = Instance.new("UICorner", CustomThumb)
+    ThumbCorner.CornerRadius = UDim.new(1, 0)
+
+    local ThumbStroke = Instance.new("UIStroke", CustomThumb)
+    ThumbStroke.Color = Color3.fromRGB(0, 255, 255)
+    ThumbStroke.Thickness = 1.2
+    ThumbStroke.Transparency = 0.2
+    ThumbStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+    local function updateCustomScrollbar()
+        local windowHeight = TabPage.AbsoluteWindowSize.Y
+        local canvasHeight = TabPage.AbsoluteCanvasSize.Y
+        local trackHeight = CustomScrollTrack.AbsoluteSize.Y
+        
+        if canvasHeight <= windowHeight or canvasHeight <= 0 then
+            CustomScrollTrack.Visible = false
+            return
+        end
+        
+        if TabPage.Visible then
+            CustomScrollTrack.Visible = true
+        end
+        
+        local visibleRatio = windowHeight / canvasHeight
+        local thumbHeight = math.clamp(visibleRatio * trackHeight, 20, trackHeight)
+        CustomThumb.Size = UDim2.new(1, 0, 0, thumbHeight)
+        
+        local maxCanvasScroll = canvasHeight - windowHeight
+        if maxCanvasScroll > 0 then
+            local scrollRatio = TabPage.CanvasPosition.Y / maxCanvasScroll
+            local maxThumbTravel = trackHeight - thumbHeight
+            CustomThumb.Position = UDim2.new(0, 0, 0, scrollRatio * maxThumbTravel)
+        else
+            CustomThumb.Position = UDim2.new(0, 0, 0, 0)
+        end
+    end
+
+    TabPage:GetPropertyChangedSignal("CanvasPosition"):Connect(updateCustomScrollbar)
+    TabPage:GetPropertyChangedSignal("AbsoluteCanvasSize"):Connect(updateCustomScrollbar)
+    TabPage:GetPropertyChangedSignal("AbsoluteWindowSize"):Connect(updateCustomScrollbar)
+    CustomScrollTrack:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateCustomScrollbar)
     
-    -- [ CUSTOM SCROLLBAR DESIGN - WHITE & CYAN NEON ]
-    TabPage.ScrollBarThickness = 4 -- เพิ่มความหนานิดหน่อยให้เห็นขอบนีออนชัดเจนขึ้น
-    TabPage.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255) -- ตัวบาร์สีขาวล้วน
-    TabPage.ScrollBarImageTransparency = 0.15 -- ปรับให้ชัดเจนขึ้น
-    
-    -- เคลียร์ปัญหากล่องหลังสีเทาเข้ม (ซ่อนแผงหลังของระบบดั้งเดิม 100%)
-    TabPage.VerticalScrollBarInset = Enum.ScrollBarInset.None
-    TabPage.HorizontalScrollBarInset = Enum.ScrollBarInset.None
-    TabPage.VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right
-    
-    -- ตกแต่งเงาเรืองแสง/เส้นขอบนีออนสีฟ้าให้แมตช์กับธีมปุ่มด้วย UIStroke
-    -- หมายเหตุ: UIStroke บน ScrollingFrame จะควบคุมเส้นขอบของ ScrollBar ด้วยใน Roblox ยุคนี้
-    local ScrollStroke = Instance.new("UIStroke", TabPage)
-    ScrollStroke.Color = Color3.fromRGB(0, 255, 255) -- สีฟ้านีออน
-    ScrollStroke.Thickness = 1
-    ScrollStroke.Transparency = 0.4 -- นีออนจางๆ สวยงาม ไม่กวนสายตา
-    ScrollStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    TabPage:GetPropertyChangedSignal("Visible"):Connect(function()
+        if TabPage.Visible then
+            updateCustomScrollbar()
+        else
+            CustomScrollTrack.Visible = false
+        end
+    end)
+
+    local dragging = false
+    local dragStartPos = 0
+    local startScrollY = 0
+
+    CustomThumb.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStartPos = input.Position.Y
+            startScrollY = TabPage.CanvasPosition.Y
+            
+            local moveConnection
+            moveConnection = UserInputService.InputChanged:Connect(function(changedInput)
+                if dragging and (changedInput.UserInputType == Enum.UserInputType.MouseMovement or changedInput.UserInputType == Enum.UserInputType.Touch) then
+                    local deltaY = changedInput.Position.Y - dragStartPos
+                    local trackHeight = CustomScrollTrack.AbsoluteSize.Y
+                    local thumbHeight = CustomThumb.AbsoluteSize.Y
+                    local maxThumbTravel = trackHeight - thumbHeight
+                    local maxCanvasScroll = TabPage.AbsoluteCanvasSize.Y - TabPage.AbsoluteWindowSize.Y
+                    
+                    if maxThumbTravel > 0 and maxCanvasScroll > 0 then
+                        local currentThumbY = (startScrollY / maxCanvasScroll) * maxThumbTravel
+                        local newThumbY = math.clamp(currentThumbY + deltaY, 0, maxThumbTravel)
+                        local newScrollRatio = newThumbY / maxThumbTravel
+                        TabPage.CanvasPosition = Vector2.new(TabPage.CanvasPosition.X, newScrollRatio * maxCanvasScroll)
+                    end
+                end
+            end)
+            
+            local endConnection
+            endConnection = UserInputService.InputEnded:Connect(function(endInput)
+                if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+                    dragging = false
+                    if moveConnection then moveConnection:Disconnect() end
+                    if endConnection then endConnection:Disconnect() end
+                end
+            end)
+        end
+    end)
 
     local ListLayout = Instance.new("UIListLayout", TabPage)
     ListLayout.Padding = UDim.new(0, 12) 
@@ -1242,7 +1330,7 @@ function WindowAPI:CreateTab(name, target, isAuto)
     local padding = Instance.new("UIPadding", TabPage)
     padding.PaddingTop = UDim.new(0, 8)
     padding.PaddingLeft = UDim.new(0, 8)
-    padding.PaddingRight = UDim.new(0, 8) -- เผื่อพื้นที่ฝั่งขวาไม่ให้ Elements เบียดชนสไลด์บาร์
+    padding.PaddingRight = UDim.new(0, 16)
 
     local b = Instance.new("TextButton", NavArea)
     b.Size = UDim2.new(0, 105, 0, 36)
@@ -1278,6 +1366,8 @@ function WindowAPI:CreateTab(name, target, isAuto)
         TabPage.BackgroundTransparency = 1
         TabPage.CanvasBackgroundTransparency = 1
         TabPage.Visible = true
+        CustomScrollTrack.Visible = true
+        updateCustomScrollbar()
     end)
 
     local self = setmetatable({}, TabClass)
