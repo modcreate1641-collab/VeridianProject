@@ -4,9 +4,6 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 
--- =====================================================================
--- [ 💾 SAVE MANAGER : ระบบหลังบ้าน ] 
--- =====================================================================
 local cloneref = (cloneref or clonereference or function(instance) return instance end)
 local clonefunction = (clonefunction or copyfunction or function(func) return func end)
 local HttpService = cloneref(game:GetService("HttpService"))
@@ -30,7 +27,7 @@ if not isfolder(Veridianhub.ConfigFolder) then
     makefolder(Veridianhub.ConfigFolder)
 end
 
--- ตัวแปลงข้อมูลเอาไว้อ่าน/เขียนไฟล์ JSON
+
 Veridianhub.ConfigParser = {
     Toggle = {
         Save = function(idx, obj) return { type = "Toggle", idx = idx, value = obj.CurrentValue } end,
@@ -658,7 +655,7 @@ function Veridianhub:CreateWindow(Config)
         end)  
     end)
 
-    local WindowAPI = {} -- สร้าง Object ตาราง API รอไว้สำหรับเก็บฟังก์ชันต่างๆ ของหน้าต่างนี้
+    local WindowAPI = {} 
     
     task.defer(function()
         if WindowAPI and WindowAPI.UpdateHubInfo then
@@ -1060,7 +1057,6 @@ local WindowAPI = {}
 local TabClass = {}
 TabClass.__index = TabClass
 
--- ฟังก์ชัน Helper แปลงลิงก์กิตฮับ (ย้ายมาไว้นอกสุดจะได้ไม่ต้องสร้างซ้ำซ้อน)
 local function ToRawURL(url)
     if type(url) ~= "string" then return url end
     if url:find("github.com") and not url:find("raw.githubusercontent.com") then
@@ -1252,7 +1248,7 @@ function WindowAPI:CreateTab(name, target, isAuto)
         CreateTween(bStroke, {Color = Color3.fromRGB(0, 255, 255), Transparency = 0.5})
     end)
 
-    -- สลับการแสดงผลหน้า Tab เมื่อกดปุ่ม Nav
+    
     b.MouseButton1Click:Connect(function()
         for _, v in pairs(PageArea:GetChildren()) do
             if v:IsA("ScrollingFrame") or v:IsA("Frame") then
@@ -1262,7 +1258,7 @@ function WindowAPI:CreateTab(name, target, isAuto)
         TabPage.Visible = true
     end)
 
-    -- สร้าง Object โดยผูกเข้ากับคลาส TabClass แบบ OOP
+    
     local self = setmetatable({}, TabClass)
     self.TabPage = TabPage
     self.NavButton = b
@@ -1532,13 +1528,13 @@ function WindowAPI:CreateTab(name, target, isAuto)
         CreateTween(bStroke, {Color = Color3.fromRGB(0, 255, 255), Transparency = 0.5})
     end)
 
-    -- สร้างตระกูล Object OOP 
+     
     local self = setmetatable({}, TabClass)
     self.TabPage = TabPage
     self.NavButton = b
     self.NavStroke = bStroke
 
-    -- ฟังก์ชันเปิดหน้า Tab พร้อมเอฟเฟกต์สุดตึง
+    
     local function OpenTab()
         if SearchBox then SearchBox.Text = "" end
         for _, v in pairs(PageArea:GetChildren()) do 
@@ -1553,10 +1549,10 @@ function WindowAPI:CreateTab(name, target, isAuto)
         TabPage.Visible = true
         CreateTween(TabPage, {BackgroundTransparency = 0, Position = UDim2.new(0, 0, 0, 0)}, 0.2, Enum.EasingStyle.Sine)
         
-        -- Lazy Loading เช็คว่าเคยรันสคริปต์ไปยัง ถ้ายังก็จัดซะ
+        
         if not TabPage:FindFirstChild("HasRan") then
             if type(target) == "function" then 
-                target(TabPage, self) -- ส่ง self (Tab Object) ไปแทนเลเยอร์อะแดปเตอร์เก่า
+                target(TabPage, self) 
             elseif type(target) == "string" and target:find("http") then
                 local lb = Instance.new("TextButton", TabPage)
                 lb.Size = UDim2.new(0.96, 0, 0, 42)
@@ -1611,7 +1607,7 @@ function TabClass:CreateSlider(cfg)
 
     local val, displayVal = getFormattedValue(val)
     
-    local sf = Instance.new("Frame", self.TabPage) -- อ้างอิงผ่าน self
+    local sf = Instance.new("Frame", self.TabPage)
     sf.Size = UDim2.new(0.96, 0, 0, 68)
     sf.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
     sf.BackgroundTransparency = 0
@@ -1827,7 +1823,7 @@ end
     SettingPage.AutomaticCanvasSize = "Y"
     SettingPage.ZIndex = 11
 
-    -- ฟังก์ชันเรนเดอร์ UI คอนโทรลพาเนลฉบับปรับแต่งใหม่
+    
     local function RenderSettings()
         SettingPage:ClearAllChildren()
         
@@ -1850,7 +1846,7 @@ end
         local ColorOn = CONFIG.NavBtnColor or Color3.fromRGB(46, 204, 113)
         local ColorOff = Color3.fromRGB(80, 80, 85)
 
-        -- [[ ปุ่มแก้ไข KEYBIND TOGGLE ]]
+        
         local kb = Instance.new("TextButton", SettingPage)
         kb.Size = UDim2.new(0.95, 0, 0, 44)
         kb.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
@@ -1886,13 +1882,13 @@ end
         Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
         knob.ZIndex = 17
 
-        -- อนิเมชันปุ่มสไตล์วัยรุ่นสปริงเด้งดึ๋งดั๋ง โคตรสมูท
+        
         kb.MouseEnter:Connect(function() CreateTween(kb, {BackgroundColor3 = Color3.fromRGB(50, 50, 55)}, 0.2) end)
         kb.MouseLeave:Connect(function() CreateTween(kb, {BackgroundColor3 = Color3.fromRGB(40, 40, 45)}, 0.2) end)
         kb.MouseButton1Down:Connect(function() CreateTween(kb, {Size = UDim2.new(0.93, 0, 0, 40)}, 0.1) end)
         kb.MouseButton1Up:Connect(function() CreateTween(kb, {Size = UDim2.new(0.95, 0, 0, 44)}, 0.4, Enum.EasingStyle.Elastic) end)
 
-        -- ฟังก์ชันสลับเปิด/ปิดการเปิดเมนูด้วยปุ่มลัด
+        
         switchBg.MouseButton1Click:Connect(function()
             CONFIG.KeybindEnabled = not CONFIG.KeybindEnabled
             CreateTween(switchBg, {BackgroundColor3 = CONFIG.KeybindEnabled and ColorOn or ColorOff}, 0.2)
@@ -1902,7 +1898,7 @@ end
         local bindConnection = nil
         local isListening = false
 
-        -- ระบบฟังปุ่มเพื่อเปลี่ยนปุ่มลัด
+        
         kb.MouseButton1Click:Connect(function()
             if isListening then return end
             isListening = true
@@ -1933,7 +1929,7 @@ end
             end)
         end)
 
-        -- [[ ระบบโหลดคลาวด์ธีมเสริมจาก GITHUB ]]
+        
         local HttpService = game:GetService("HttpService")
         local extThemes = {["Default"] = CONFIG.NavBtnColor or Color3.fromRGB(52, 152, 219)}
         local urls = {"https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/theme.json"}
@@ -2062,7 +2058,7 @@ end
             end)
         end
 
-        -- บิ้วตัวเลือกสลับ "Theme"
+        
         BuildDrop("Theme", function()
             local t = {}
             for k, _ in pairs(extThemes) do table.insert(t, k) end
@@ -2075,7 +2071,7 @@ end
             end
         end)
 
-        -- บิ้วตัวเลือกภาพพื้นหลัง "Background"
+        
         BuildDrop("Background", function()
             local t = {"None"}
             local targetFolder = CONFIG.BgFolder .. "/BgAsset"
@@ -2104,10 +2100,10 @@ end
         end)
     end
     
-    -- จัดการรันเพื่อเตรียมข้อมูลปุ่มไว้ล่วงหน้า
+    
     RenderSettings()
     
-    -- อีเวนต์ตอนกดปุ่มฟันเฟือง Setting บนหัวแถว UI
+    
     TopSettingBtn.MouseButton1Click:Connect(function() 
         if SearchBox then SearchBox.Text = "" end 
         for _, v in pairs(PageArea:GetChildren()) do 
@@ -2125,4 +2121,5 @@ end
 
     return WindowAPI 
 end 
+
 return Veridianhub
