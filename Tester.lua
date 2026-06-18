@@ -1560,16 +1560,12 @@ function WindowAPI:CreateTab(name, target, isAuto)
     local function OpenTab()
         if SearchBox then SearchBox.Text = "" end
         for _, v in pairs(PageArea:GetChildren()) do 
-            if v:IsA("ScrollingFrame") or v:IsA("Frame") then
-                if v.Visible then 
-                    CreateTween(v, {BackgroundTransparency = 1, Position = UDim2.new(0, 20, 0, 0)}, 0.15).Completed:Connect(function() 
-                        v.Visible = false 
-                    end) 
-                end
+            if v.Visible then 
+                CreateTween(v, {BackgroundTransparency = 1, Position = UDim2.new(0, 20, 0, 0)}, 0.15).Completed:Connect(function() v.Visible = false end) 
             end
         end
         TabPage.Visible = true
-        CreateTween(TabPage, {BackgroundTransparency = 0, Position = UDim2.new(0, 0, 0, 0)}, 0.2, Enum.EasingStyle.Sine)
+        CreateTween(TabPage, {BackgroundTransparency = 1, Position = UDim2.new(0, 0, 0, 0)}, 0.2, Enum.EasingStyle.Sine)
         
         
         if not TabPage:FindFirstChild("HasRan") then
