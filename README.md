@@ -27,3 +27,7 @@
  * **Global:** https://en.wikipedia.org/wiki/Berne_Convention
 > **"You can stand on the shoulders of giants to see further, but you cannot cut off the giant's head and claim it as your own."**
 >
+Just one more thing
+
+> **"You can claim whatever you want, but the law won't spare you, not even if you're in the womb."**
+>
