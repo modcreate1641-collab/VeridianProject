@@ -180,10 +180,152 @@ function Veridianhub:CreateWindow(Config)
         TargetGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
     end
 
-    -- [[ MAIN GUI CONTAINER LAYER ]] --
+
+    local showLoading = false
+    if typeof(Config) == "table" then
+        for k, v in pairs(Config) do
+            local keyLower = string.lower(tostring(k))
+
+            if keyLower == "loadscreen" or keyLower == "loadingscreen" then
+                local valStr = string.lower(tostring(v))
+
+                if v == true or valStr == "true" or valStr == "on" then
+                    showLoading = true
+                end
+            end
+        end
+    end
+
+    if showLoading then
+        local IntroUrl = "https://raw.githubusercontent.com/modcreate1641-collab/VeridianProject/refs/heads/main/Microsoft%20Windows%207%20Startup%20Sound%20(animated).mp3"
+        local IntroFilename = "Win7Startup.mp3"
+
+        if not isfile(IntroFilename) then
+            pcall(function()
+                writefile(IntroFilename, game:HttpGet(IntroUrl))
+            end)
+            task.wait(0.3)
+        end
+
+        local IntroGui = Instance.new("ScreenGui")
+        local IntroFrame = Instance.new("Frame")
+        local IntroTitle = Instance.new("TextLabel")
+        local IntroSubtitle = Instance.new("TextLabel")
+        local LoadingBg = Instance.new("Frame")
+        local LoadingBar = Instance.new("Frame")
+
+        IntroGui.Name = "VeridianIntro"
+        IntroGui.Parent = TargetGui 
+        IntroGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+        IntroFrame.Name = "IntroFrame"
+        IntroFrame.Parent = IntroGui
+        IntroFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        IntroFrame.BackgroundTransparency = 1
+        IntroFrame.BorderSizePixel = 0
+        IntroFrame.Position = UDim2.new(0.5, -200, 0.5, -100)
+        IntroFrame.Size = UDim2.new(0, 400, 0, 200)
+
+        local IntroCorner = Instance.new("UICorner")
+        IntroCorner.CornerRadius = UDim.new(0, 12)
+        IntroCorner.Parent = IntroFrame
+
+        IntroTitle.Name = "IntroTitle"
+        IntroTitle.Parent = IntroFrame
+        IntroTitle.BackgroundTransparency = 1
+        IntroTitle.Position = UDim2.new(0, 0, 0.2, 0)
+        IntroTitle.Size = UDim2.new(1, 0, 0.25, 0)
+        IntroTitle.Font = Enum.Font.GothamBold
+        IntroTitle.Text = "VERIDIAN PROJECT"
+        IntroTitle.TextColor3 = Color3.fromRGB(0, 180, 255)
+        IntroTitle.TextSize = 28
+        IntroTitle.TextTransparency = 1
+
+        IntroSubtitle.Name = "IntroSubtitle"
+        IntroSubtitle.Parent = IntroFrame
+        IntroSubtitle.BackgroundTransparency = 1
+        IntroSubtitle.Position = UDim2.new(0, 0, 0.45, 0)
+        IntroSubtitle.Size = UDim2.new(1, 0, 0.15, 0)
+        IntroSubtitle.Font = Enum.Font.Gotham
+        IntroSubtitle.Text = "Loading Windows 7 Nostalgia..."
+        IntroSubtitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+        IntroSubtitle.TextSize = 13
+        IntroSubtitle.TextTransparency = 1
+
+        LoadingBg.Name = "LoadingBg"
+        LoadingBg.Parent = IntroFrame
+        LoadingBg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        LoadingBg.BackgroundTransparency = 1
+        LoadingBg.Position = UDim2.new(0.1, 0, 0.7, 0)
+        LoadingBg.Size = UDim2.new(0.8, 0, 0, 6)
+
+        local BgCorner = Instance.new("UICorner")
+        BgCorner.CornerRadius = UDim.new(0, 3)
+        BgCorner.Parent = LoadingBg
+
+        LoadingBar.Name = "LoadingBar"
+        LoadingBar.Parent = LoadingBg
+        LoadingBar.BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+        LoadingBar.BackgroundTransparency = 1
+        LoadingBar.Size = UDim2.new(0, 0, 1, 0)
+
+        local BarCorner = Instance.new("UICorner")
+        BarCorner.CornerRadius = UDim.new(0, 3)
+        BarCorner.Parent = LoadingBar
+
+        local IntroSound = Instance.new("Sound")
+        IntroSound.Name = "StartupSound"
+        IntroSound.Parent = IntroFrame
+        IntroSound.Volume = 1
+
+        pcall(function()
+            IntroSound.SoundId = getcustomasset(IntroFilename)
+        end)
+
+
+        local tweenInfoFast = TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        TweenService:Create(IntroFrame, tweenInfoFast, {BackgroundTransparency = 0.2}):Play()
+        TweenService:Create(IntroTitle, tweenInfoFast, {TextTransparency = 0}):Play()
+        TweenService:Create(IntroSubtitle, tweenInfoFast, {TextTransparency = 0}):Play()
+        TweenService:Create(LoadingBg, tweenInfoFast, {BackgroundTransparency = 0}):Play()
+        TweenService:Create(LoadingBar, tweenInfoFast, {BackgroundTransparency = 0}):Play()
+
+        IntroSound:Play()
+
+
+        local tweenInfoProgress = TweenInfo.new(7.0, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+        TweenService:Create(LoadingBar, tweenInfoProgress, {Size = UDim2.new(1, 0, 1, 0)}):Play()
+
+        local startTime = os.clock()
+        while (os.clock() - startTime) < 7.3 do task.wait() end
+
+        local tweenInfoOut = TweenInfo.new(0.7, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        TweenService:Create(IntroFrame, tweenInfoOut, {BackgroundTransparency = 1, Position = UDim2.new(0.5, -200, 0.5, 200)}):Play()
+        TweenService:Create(IntroTitle, tweenInfoOut, {TextTransparency = 1}):Play()
+        TweenService:Create(IntroSubtitle, tweenInfoOut, {TextTransparency = 1}):Play()
+        TweenService:Create(LoadingBg, tweenInfoOut, {BackgroundTransparency = 1}):Play()
+        TweenService:Create(LoadingBar, tweenInfoOut, {BackgroundTransparency = 1}):Play()
+
+        while (os.clock() - startTime) < 8.0 do task.wait() end
+        IntroGui:Destroy()
+    end
+    -- =============================================================================
+
+    -- [[ ENVIRONMENT EXECUTOR GUI TARGET CHECK CONTINUED ]] --
+    local FakeNames = {
+        "RobloxGui", "BubbleChat", "InGameMenu", "PlayerList", "TopBar",
+        "NotificationScript2", "ControlHint", "PurchasePrompt", "ChatChannel", "avatarContextMenu", 
+        "PerformanceStats", "DevConsoleMaster", "TouchGui", "Chat_New", "ExperienceChat", 
+        "EmotesMenu", "BackpackScript", "AppLayout", "Unification", "RightClickMenu"
+    }
+
+    local RandomIndex = math.random(1, #FakeNames)
+    local ChosenName = FakeNames[RandomIndex]
+
     local ScreenGui = Instance.new("ScreenGui", TargetGui)
-    ScreenGui.Name = "VeridianHub_Official_Full"
+    ScreenGui.Name = ChosenName 
     ScreenGui.IgnoreGuiInset = true
+    
 
     local MainFrame = Instance.new("CanvasGroup", ScreenGui)
     MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
