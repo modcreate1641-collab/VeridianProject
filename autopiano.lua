@@ -150,7 +150,7 @@ PianoTab:CreateButton({
 })
 
 PianoTab:CreateButton({
-    Name = "🎵 Prezioso & Marvin - Thunder",
+    Name = "🎵war thunder",
     Callback = function()
         local scriptCode = "bpm = 115  loadstring(game:HttpGet(\"https://hellohellohell0.com/talentless-raw/loader_main.lua\", true))()  loadstring(game:HttpGet(\"https://gist.githack.com/talentless-custom-songs/5db5e2664d9fbcf6828cce39c25ca6ae/raw/custom_song.lua\", true))()"
         local func, err = loadstring(scriptCode)
@@ -358,7 +358,7 @@ PianoTab:CreateButton({
 })
 
 PianoTab:CreateButton({
-    Name = "🎵 iPhone Alarm as a Piano Ballad",
+    Name = "🎵 Tony Ann -  iPhone Alarm as a Piano Ballad",
     Callback = function()
         local scriptCode = "bpm = 139  loadstring(game:HttpGet(\"https://hellohellohell0.com/talentless-raw/loader_main.lua\", true))()  loadstring(game:HttpGet(\"https://gist.githack.com/talentless-custom-songs/2a56ccf77beb688286f0f8771f6f45ee/raw/custom_song.lua\", true))()"
         local func, err = loadstring(scriptCode)
@@ -787,14 +787,14 @@ PianoTab:CreateButton({
 })
 
 PianoTab:CreateButton({
-    Name = "🎵 Elektronomia - Sky High",
+    Name = "🎵 Elektronomia - Sky High (2)",
     Callback = function()
         local scriptCode = "bpm = 128  loadstring(game:HttpGet(\"https://hellohellohell0.com/talentless-raw/loader_main.lua\", true))()  loadstring(game:HttpGet(\"https://gist.githack.com/talentless-custom-songs/687f401eb1fe4001b77c67943b55dc29/raw/custom_song.lua\", true))()"
         local func, err = loadstring(scriptCode)
         if func then 
             task.spawn(func) 
         else 
-            warn("Lua Error in Elektronomia - Sky High: " .. tostring(err)) 
+            warn("Lua Error in Elektronomia - Sky High(2): " .. tostring(err)) 
         end
     end
 })
@@ -852,7 +852,7 @@ PianoTab:CreateButton({
 })
 
 PianoTab:CreateButton({
-    Name = "🎵 Maggie ft. Cuka - Summertime 2018",
+    Name = "🎵 Elektronomia - Summertime 2018",
     Callback = function()
         local scriptCode = "bpm = 100  loadstring(game:HttpGet(\"https://hellohellohell0.com/talentless-raw/loader_main.lua\", true))()  loadstring(game:HttpGet(\"https://gist.githack.com/talentless-custom-songs/12e836e8da53983a52066c818252687b/raw/custom_song.lua\", true))()"
         local func, err = loadstring(scriptCode)
@@ -956,14 +956,14 @@ PianoTab:CreateButton({
 })
 
 PianoTab:CreateButton({
-    Name = "🎵 32ki - Mesmerizer",
+    Name = "🎵 32ki - Mesmerizer(2)",
     Callback = function()
         local scriptCode = "bpm = 120  loadstring(game:HttpGet(\"https://hellohellohell0.com/talentless-raw/loader_main.lua\", true))()  loadstring(game:HttpGet(\"https://gist.githack.com/talentless-custom-songs/f26c137d3b91f61709d918889b3ac103/raw/custom_song.lua\", true))()"
         local func, err = loadstring(scriptCode)
         if func then 
             task.spawn(func) 
         else 
-            warn("Lua Error in 32ki - Mesmerizer: " .. tostring(err)) 
+            warn("Lua Error in 32ki - Mesmerizer(2): " .. tostring(err)) 
         end
     end
 })
