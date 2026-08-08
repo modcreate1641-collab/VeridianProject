@@ -1,6 +1,6 @@
 local folderName = "furlogo"
-local fileName = folderName .. "/mascot_clean.png"
-local imageUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/1000109193-01.jpeg"
+local fileName = folderName .. "/Furry-kemono.png"
+local imageUrl = "https://raw.githubusercontent.com/modcreate1641-collab/Veridian/refs/heads/main/AI_Enlarged_1786059250404.jpg"
 
 if not isfolder(folderName) then makefolder(folderName) end
 if not isfile(fileName) then
